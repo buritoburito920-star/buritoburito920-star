@@ -21,8 +21,16 @@ It is not called 3D-Spaghetti because it *makes* spaghetti **It Detects It**. Be
 - **Always be alerted** – Receive instant notifications with a picture whenever a failure occurs. <sub>(Also alerts when prints start, end, or pause)</sub>
 
 ### 📓 Side Notes:
-  - This <strong>ONLY</strong> supports the AD5M <sub>Adventurer5M</sub> **Yet**, it might work with the AD5X <sub>Adventurer5X</sub> although its not tested.
+  - This <strong>ONLY</strong> supports the AD5M <sub>(Adventurer5M)</sub> **Yet**, it might work with the AD5X <sub>(Adventurer5X)</sub> although its not tested.
   - <strong>3D-Spaghetti</strong> is still in beta and might have some bugs.
+
+### Requirements: <sub>(The stuff you need to use it.)</sub>
+  
+| Minimum Requirements | Recommended Requirements |
+| :--- | :--- |
+| - Raspberry Pi 3 4GB RAM 720p Raspberry Pi Camera Module | - Raspberry Pi 4 8GB RAM 1080p Raspberry Pi Camera Module |
+
+
 
 
 <!--
