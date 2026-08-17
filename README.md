@@ -2,8 +2,11 @@
 
 # 3D-Spaghetti
 
-> Tired of your prints failing and wasting filament while you are away or sleeping? Say goodbye to print anxiety. The **3D-Spaghetti Monitor** watches your printer in real-time, automatically pausing your machine the moment a failure starts so you can rest easy.
-> 
+< Tired of your prints failing and wasting filament while you are away or sleeping? Say goodbye to print anxiety. The **3D-Spaghetti Monitor** watches your printer in real-time, automatically pausing your machine the moment a failure starts so you can rest easy.
+>
+
+# 3D-Spaghetti Overview
+
 
 <!--
 **buritoburito920-star/buritoburito920-star** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
