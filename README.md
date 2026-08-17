@@ -1,18 +1,28 @@
-<img width="1280" height="640" alt="3D-spaghetti" src="https://github.com/user-attachments/assets/2c0f3d4d-40cf-47e8-bb76-49a6496d4417" />
+<div align="center">
+  <img width="100%" height="auto" alt="3D-spaghetti" src="https://github.com/user-attachments/assets/2c0f3d4d-40cf-47e8-bb76-49a6496d4417" />
+</div>
 
 # 3D-Spaghetti
 
-### <p align="center"> Tired of your prints failing and wasting filament while you are away or sleeping? Say goodbye to print anxiety. The **3D-Spaghetti Monitor** watches your printer in real-time, automatically pausing your machine when a failure starts so you can rest easy.</p>
+<p align="center">
+  Tired of your prints failing and wasting filament while you are away or sleeping? Say goodbye to print anxiety. The <strong>3D-Spaghetti Monitor</strong> watches your printer in real-time, automatically pausing your machine when a failure starts so you can rest easy.
+</p>
 
+***
 
-# **3D-Spaghetti Overview**
+## 📋 Overview
 
-Well its not called 3D-Spaghetti because it makes spaghetti it detects them, not only that it does much more things.
-### Capabilities: 
-  - ***Spaghetti detection*** - Automatically pauses the print when a failure is detected.
-  - ***Monitor prints anywhere*** - Watch a print online from anywhere in the world.
-  - ***Control your printer*** - Have a control panel where you can control your printer from anywhere.
-  - ***Always be alerted*** - Always know when your prints failed with a picture, and more alerts. <sub>eg(When print starts, ends, paused...)</sub>
+It is not called 3D-Spaghetti because it *makes* spaghetti **It Detects It**. Beyond detection, it provides a full suite of remote monitoring tools.
+
+### Key Capabilities:
+- **Spaghetti detection** – Automatically pauses the print when a failure is detected.
+- **Monitor prints anywhere** – Watch your live print stream from anywhere in the world.
+- **Control your printer** – Access a complete control panel to manage your machine remotely.
+- **Always be alerted** – Receive instant notifications with a picture whenever a failure occurs. <sub>(Also alerts when prints start, end, or pause)</sub>
+
+### 📓 Side Notes:
+  - This <strong>ONLY</strong> supports the AD5M <sub>Adventurer5M</sub> **Yet**, it might work with the AD5X <sub>Adventurer5X</sub> although its not tested.
+  - <strong>3D-Spaghetti</strong> is still in beta and might have some bugs.
 
 
 <!--
