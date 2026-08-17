@@ -1,5 +1,4 @@
-<img width="1216" height="942" alt="3fd4a7e0-bf8a-46c7-9124-ec14c3d3af7f (1)" src="https://github.com/user-attachments/assets/b8255c17-4d6a-45bc-a758-9975c2556118" />
-
+<img width="1280" height="640" alt="3D-spaghetti" src="https://github.com/user-attachments/assets/2c0f3d4d-40cf-47e8-bb76-49a6496d4417" />
 
 # 3D-Spaghetti
 
