@@ -1,3 +1,6 @@
+<img width="1216" height="942" alt="3fd4a7e0-bf8a-46c7-9124-ec14c3d3af7f (1)" src="https://github.com/user-attachments/assets/b8255c17-4d6a-45bc-a758-9975c2556118" />
+
+
 # 3D-Spaghetti
 
 > Tired of your prints failing and wasting filament while you are away or sleeping? Say goodbye to print anxiety. The **3D-Spaghetti Monitor** watches your printer in real-time, automatically pausing your machine the moment a failure starts so you can rest easy.
