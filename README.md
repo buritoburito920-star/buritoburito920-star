@@ -2,10 +2,17 @@
 
 # 3D-Spaghetti
 
-< Tired of your prints failing and wasting filament while you are away or sleeping? Say goodbye to print anxiety. The **3D-Spaghetti Monitor** watches your printer in real-time, automatically pausing your machine the moment a failure starts so you can rest easy.
->
+### <p align="center"> Tired of your prints failing and wasting filament while you are away or sleeping? Say goodbye to print anxiety. The **3D-Spaghetti Monitor** watches your printer in real-time, automatically pausing your machine when a failure starts so you can rest easy.</p>
 
-# 3D-Spaghetti Overview
+
+# **3D-Spaghetti Overview**
+
+Well its not called 3D-Spaghetti because it makes spaghetti it detects them, not only that it does much more things.
+### Capabilities: 
+  - ***Spaghetti detection*** - Automatically pauses the print when a failure is detected.
+  - ***Monitor prints anywhere*** - Watch a print online from anywhere in the world.
+  - ***Control your printer*** - Have a control panel where you can control your printer from anywhere.
+  - ***Always be alerted*** - Always know when your prints failed with a picture, and more alerts. <sub>eg(When print starts, ends, paused...)</sub>
 
 
 <!--
