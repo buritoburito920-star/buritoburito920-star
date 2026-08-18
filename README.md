@@ -18,17 +18,17 @@ It is not called 3D-Spaghetti because it *makes* spaghetti **it detects it**. Be
 Unlike systems like OctoPrint or Obico, 3D-Spaghetti controls your machine natively without requiring any physical modding or firmware flashing. This ensures you never risk **voiding your FlashForge factory warranty**.
 
 ### ✨ Key Capabilities
-- **Spaghetti Detection** – Automatically pauses the print the moment a failure is detected.
-- **Global Print Monitoring** – Watch your live print camera stream securely from anywhere in the world.
-- **Remote Printer Control** – Access an interactive control panel to manage your machine on the go.
-- **Instant Failure Alerts** – Receive immediate notifications with photo evidence. <sub>(Also alerts on print start, end, or pauses)</sub>
+- **Spaghetti Detection** - Automatically pauses the print the moment a failure is detected.
+- **Global Print Monitoring** - Watch your live print camera stream securely from anywhere in the world.
+- **Remote Printer Control** - Access an interactive control panel to manage your machine on the go.
+- **Instant Failure Alerts** - Receive immediate notifications with photo evidence. <sub>(Also alerts on print start, end, or pauses)</sub>
 
 ### 📓 Side Notes
-- **Hardware Compatibility** – Currently optimized **only** for the FlashForge AD5M <sub>(Adventurer 5M)</sub>. It may function with the AD5X <sub>(Adventurer 5X)</sub>, but it remains officially untested.
-- **Project Status** – 3D-Spaghetti is currently in active **Beta** and may contain minor bugs.
-- **AI Constraints** – This platform relies heavily on computer vision models which <sub>***can*** occasionally make mistakes</sub>.
-- **Safety First** – The installation environment is **100% reversible** and will not damage your Raspberry Pi or your 3D printer.
-- **Disclaimer** – The maintainer is not responsible for any software issues arising from unguided modifications to the codebase.
+- **Hardware Compatibility** - Currently optimized **only** for the FlashForge AD5M <sub>(Adventurer 5M)</sub>. It may function with the AD5X <sub>(Adventurer 5X)</sub>, but it remains officially untested.
+- **Project Status** - 3D-Spaghetti is currently in active **Beta** and may contain minor bugs.
+- **AI Constraints** - This platform relies heavily on computer vision models which <sub>***can*** occasionally make mistakes</sub>.
+- **Safety First** - The installation environment is **100% reversible** and will not damage your Raspberry Pi or your 3D printer.
+- **Disclaimer** - The maintainer is not responsible for any software issues arising from unguided modifications to the codebase.
 
 ---
 
