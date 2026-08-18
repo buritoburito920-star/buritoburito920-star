@@ -28,7 +28,7 @@ Unlike systems like OctoPrint or Obico, 3D-Spaghetti controls your machine nativ
 - **Project Status** - 3D-Spaghetti is currently in active **Beta** and may contain minor bugs.
 - **AI Constraints** - This platform relies heavily on computer vision models which <sub>***can*** occasionally make mistakes</sub>.
 - **Safety First** - The installation environment is **100% reversible** and will not damage your Raspberry Pi or your 3D printer.
-- **Disclaimer** - The maintainer is not responsible for any software issues arising from unguided modifications to the codebase.
+- **Disclaimer** - The Creator is not responsible for any software issues arising from unguided modifications to the codebase.
 
 ---
 
