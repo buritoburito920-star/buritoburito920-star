@@ -12,7 +12,7 @@
 
 ## 📋 Overview
 
-It is not called 3D-Spaghetti because it *makes* spaghetti—**it detects it**. Beyond detection, it provides a full remote control panel and monitoring suite. 
+It is not called 3D-Spaghetti because it *makes* spaghetti **it detects it**. Beyond detection, it provides a full remote control panel and monitoring suite. 
 
 ### Why choose 3D-Spaghetti over alternatives?
 Unlike systems like OctoPrint or Obico, 3D-Spaghetti controls your machine natively without requiring any physical modding or firmware flashing. This ensures you never risk **voiding your FlashForge factory warranty**.
