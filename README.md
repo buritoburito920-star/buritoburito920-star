@@ -12,7 +12,7 @@
 
 ## 📋 Overview
 
-It is not called 3D-Spaghetti because it *makes* spaghetti **it detects it**. Beyond detection, it provides a full remote control panel and monitoring suite. 
+It is not called 3D-Spaghetti because it *makes* spaghetti **it detects it**. Not detecting only, it provides a full remote control panel. 
 
 ### Why choose 3D-Spaghetti over alternatives?
 Unlike systems like OctoPrint or Obico, 3D-Spaghetti controls your machine natively without requiring any physical modding or firmware flashing. This ensures you never risk **voiding your FlashForge factory warranty**.
@@ -154,3 +154,9 @@ To ensure your scripts run reliably and restart automatically when your Raspberr
    sudo systemctl status printer_watchdog.service
    sudo systemctl status camera_feed.service
    ```
+---
+## Like the Project?
+give it a ⭐ :).
+
+## Help in Development to get out of beta.
+Found a bug? Have a question? Want to Contribute? Join my [Discord](https://discord.gg/kBnARF7EV).
