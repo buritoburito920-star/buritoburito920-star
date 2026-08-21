@@ -3,164 +3,176 @@
 </div>
 
 # 3D-Spaghetti
+### Your Printer's New Guardian Angel
 
 <p align="center">
-  Tired of your prints failing and wasting filament while you are away or sleeping? Say goodbye to print anxiety. The <strong>3D-Spaghetti Monitor</strong> watches your printer in real-time, automatically pausing your machine when a failure starts so you can rest easy.
+  <b>Ever woke up to a bird's nest of wasted filament?</b><br>
+  That late night print you trusted just turned into a plastic tumbleweed. <b>3D-Spaghetti Monitor</b> never blinks. It watches your print in real time and slams the brakes the second spaghetti starts, so you can sleep, work, or leave the house with zero anxiety.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Status-Beta-orange?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Made%20for-FlashForge%20AD5M-ff6b00?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Powered%20by-Computer%20Vision-blue?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/100%25-Reversible-green?style=for-the-badge" />
 </p>
 
 ***
 
 ## 📋 Overview
 
-It is not called 3D-Spaghetti because it *makes* spaghetti **it detects it**. Not detecting only, it provides a full remote control panel.
+It is not called 3D-Spaghetti because it *makes* spaghetti, it is called that because it *hunts* it. This is not just a detector, it is a full remote command center for your printer.
 
-### Why choose 3D-Spaghetti over alternatives?
-Unlike systems, 3D-Spaghetti controls your machine natively without requiring any physical modding or firmware flashing. This ensures you never risk **voiding your FlashForge factory warranty**.
+### Why 3D-Spaghetti Crushes The Alternatives?
+OctoPrint and Obico are powerful, but they ask you to mod, flash, and risk your machine. 3D-Spaghetti plugs in natively. No hardware mods. No firmware flashing. Zero risk of **voiding your FlashForge factory warranty**. Pure plug and protect.
 
-### ✨ Key Capabilities
-- **Spaghetti Detection** - Automatically pauses the print the moment a failure is detected.
-- **Global Print Monitoring** - Watch your live print camera stream securely from anywhere in the world.
-- **Remote Printer Control** - Access an interactive control panel to manage your machine on the go.
-- **Instant Failure Alerts** - Receive immediate notifications with photo evidence. <sub>(Also alerts on print start, end, or pauses)</sub>
-- **Time-lapse Recording** - Every finished print becomes a downloadable MP4.
-- **~ETA, Elapsed, and ~Total Time** - Every print after a few layers you will get a estimated time left <sub>(**ETA**)</sub>, you will also get how long it has been printing <sub>(**Elapsed**)</sub>, and you will get an estimation on the Total Time left <sub>(**Total Time**)</sub>.
+### ✨ What You Get
+- **🍝 Instant Spaghetti Detection** - Catches failures in seconds and auto pauses before your spool is gone
+- **🌍 Watch From Anywhere** - Crystal clear live camera stream, secure Tailscale tunnel, no port forwarding
+- **🎮 Full Remote Control** - Pause, resume, cancel, move axes, set temps, send GCode from your phone
+- **⚡ Photo Proof Alerts** - Discord pings with a snapshot the moment it pauses, plus start, finish, and manual events
+- **🎬 Auto Time-lapse** - Every print becomes a shareable MP4, with optional HUD overlay
+- **⏱ Smart Time Tracking** - Live ETA, Elapsed, and Total Time estimates after the first few layers
 
 > [!Warning]
-> - **Hardware Compatibility** - Currently optimized **only** for the FlashForge AD5M <sub>(Adventurer 5M)</sub>. It may function with the AD5X <sub>(Adventurer 5X)</sub>, but it remains officially untested.
-> - **Project Status** - 3D-Spaghetti is currently in active **Beta** and may contain minor bugs.
-> - **AI Constraints** - This platform relies heavily on computer vision which ***can*** occasionally make mistakes.
-> - **Safety First** - The installation environment is **100% reversible** and will not damage your Raspberry Pi or your 3D printer.
-> - **Disclaimer** - The Creator is not responsible for any software issues arising from unguided modifications to the codebase.
+> - **Hardware Compatibility** - Tuned **only** for FlashForge AD5M <sub>(Adventurer 5M)</sub>. AD5X <sub>(Adventurer 5X)</sub> may work but is untested
+> - **Project Status** - Active **Beta**, expect polish updates, minor bugs possible
+> - **AI Honesty** - Computer vision is powerful but ***can*** be wrong, use Pause or Cancel at your own risk
+> - **Safety First** - 100% reversible install, will not damage your Pi or printer
+> - **Disclaimer** - Creator is not liable for issues from unguided code changes
 
 ---
 
 ## ⚙️ Requirements <sub>(Hardware check)</sub>
 
-| Minimum Requirements | Recommended Requirements |
+| Minimum | Recommended For Best Experience |
 | :--- | :--- |
-| • Raspberry Pi 3 (4GB RAM)<br>• 720p Pi Camera Module<br>• High-quality power brick & cable <sub>(prevents Pi voltage crashes)</sub><br>• High-speed Micro SD card | • Raspberry Pi 4 (8GB RAM)<br>• 1080p Pi Camera Module<br>• High-quality power brick & cable <sub>(prevents Pi voltage crashes)</sub><br>• High-speed Micro SD card |
+| • Raspberry Pi 3 (4GB RAM)<br>• 720p Pi Camera Module<br>• Quality power brick and cable <sub>(prevents voltage crashes)</sub><br>• Fast Micro SD card | • Raspberry Pi 4 (8GB RAM)<br>• 1080p Pi Camera Module<br>• Quality power brick and cable<br>• Fast Micro SD card |
 
-**Software:** Raspberry Pi OS (Bullseye/Bookworm), Python 3.11, `rpicam-vid` / `libcamera-apps`, Tailscale.
+
+**Software:** Raspberry Pi OS (Bullseye or Bookworm), Python 3.11, `rpicam-vid` / `libcamera-apps`, Tailscale
 
 ---
 
 ## 🚀 Setup & Installation
 
 > [!NOTE]
-> This setup was actively verified on a Raspberry Pi 4. Steps may vary slightly on other boards or PC environments.
+> Verified live on Raspberry Pi 4. Other boards or PCs work with tiny tweaks.
 
-### 📍 Step 1: Network & Account Preparation
-1. Note your **Raspberry Pi IP** and your **FlashForge Printer IP** (port `8899` is fixed).
-2. **Optional Discord Alerts:** Get your **Discord User ID** for pings and create a private server webhook URL.
+### 📍 Step 1: Prep Your Network
+1. Grab your **Raspberry Pi IP** and your **FlashForge Printer IP** (port `8899` is fixed)
+2. Optional but awesome: Create a Discord server, make a webhook, copy your **Webhook URL** and your **Discord User ID** for personal pings
 
-### 💻 Step 2: Tooling Configuration
-1. Install [PuTTY](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html) and [FileZilla](https://filezilla-project.org) on your PC (any SSH/SFTP client works).
-2. Download the three core files: `Printer_watchdog.py`, `web_feed.py`, `3D-Spaghetti_Setup` (+ `requirements.txt` and `logo.png` optional).
+### 💻 Step 2: Get Your Tools
+1. Install [PuTTY](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html) and [FileZilla](https://filezilla-project.org) on your PC. Any SSH or SFTP client works.
+2. Download the project bundle: `3D-Spaghetti` folder
 
-### 🔌 Step 3: Establish Remote Connectivity
-* **SSH:** PuTTY -> Host Name = Pi IP, Port `22`, SSH -> Open -> login.
-* **SFTP:** FileZilla -> Host `sftp://[Pi_IP]` -> Username/Password -> Port `22` -> Quickconnect.
+### 🔌 Step 3: Connect To Your Pi
+* **SSH:** PuTTY > Host Name = Pi IP, Port `22`, Connection type `SSH` > Open > login
+* **SFTP:** FileZilla > Host `sftp://[Pi_IP]` > Username and Password > Port `22` > Quickconnect
 
-### 📂 Step 4: Code Deployment & Configuration
-1. In FileZilla drag the project folder to your Pi, recommended path `/media/[user]/[MicroSD]/3D-Spaghetti` or `~/3D-Spaghetti`.
+### 📂 Step 4: Deploy and Go
+1. In FileZilla drag the `3D-Spaghetti` folder to your Pi. Best spots are `/media/[user]/[MicroSD]/3D-Spaghetti` or `~/3D-Spaghetti`
 2. In PuTTY:
    ```bash
    cd /path/to/3D-Spaghetti
-   bash 3D-Spaghetti_Setup --check   # read-only check, changes nothing
-   bash 3D-Spaghetti_Setup           # full install
+   bash 3D-Spaghetti_Setup --check   # safe dry run, changes nothing
+   bash 3D-Spaghetti_Setup           # real install
    ```
-3. On first install open the dashboard `http://[Pi_IP]:5000` and complete the setup wizard (printer IP, webhook). The public Tailscale URL appears after `config.json` is created.
+3. Open `http://[Pi_IP]:5000`, set your dashboard password, enter printer IP and Discord webhook. Your public link `https://[name].ts.net` appears after `config.json` is created.
 
-### What the installer does
-1. **Python:** Uses `~/miniforge3/bin/python3`, `~/mambaforge`, or `/opt/miniforge3` if present, otherwise creates `env/` via micromamba (or `python3-venv` on armv6). Installs `requirements.txt` if needed.
-2. **Camera:** Installs `libcamera-apps` if `rpicam-vid` is missing.
-3. **Tailscale:** Installs via `tailscale.com/install.sh` if missing, runs `tailscale up` and shows `https://login.tailscale.com/a/...` if not logged in, adds passwordless `sudoers.d/ad5m-funnel`, enables `funnel --bg --https=443 5000` only after `config.json` exists.
-4. **Services:** Creates `printer_watchdog.service` (`python -u Printer_watchdog.py`) and `camera_feed.service` (`python web_feed.py`) if not already active. Skips if both are running.
-5. **Summary:** Prints `Local dashboard: http://[Pi_IP]:5000` and `Public dashboard: https://[name].ts.net` (fallback via `tailscale status --json` DNSName).
-
-### Installer flags
+### Installer Flags
 ```bash
-bash 3D-Spaghetti_Setup --check      # verify only
-bash 3D-Spaghetti_Setup --uninstall  # remove services + funnel, keep config/password
-bash 3D-Spaghetti_Setup --reset      # as above plus delete config.json, settings, password (fresh wizard)
+bash 3D-Spaghetti_Setup --check      # audit only, perfect for testing
+bash 3D-Spaghetti_Setup --uninstall  # remove services and funnel, keep your config
+bash 3D-Spaghetti_Setup --reset      # full wipe to fresh wizard
 ```
-
-Re-running without flags is idempotent and safe.
+Run it again anytime, it is idempotent and safe.
 
 ---
 
-## 🖥️ Dashboard
+## 🖥️ The Dashboard
 
-Open `http://[Pi_IP]:5000` locally or `https://[name].ts.net` remotely. Login uses the password you set in the wizard.
+Open `http://[Pi_IP]:5000` at home or `https://[name].ts.net` anywhere. One password you set, that is it.
 
-### Layout
-- **Top bar:** Printer state badge, progress, elapsed/ETA, hotend and bed temps, help `?` to replay tour, `AD5M` brand with `logo.png` favicon.
-- **Left column:** Print Status (progress bar, layer `cur/tot`, AI failure %, elapsed/ETA, Pause/Resume/Cancel) + G-code Console (Tab autocomplete, Enter to send).
-- **Center column:** Live Feed `640x480` MJPEG, green nozzle box, orange focus zone, `FAIL%` pill, 3m 05s setup timer, baseline and active states.
-- **Right column:** Temps and Controls (hotend/bed SET/OFF), Settings panel, Detector (Status/Certainty/Hits/Cycle), AI Confidence, Temps chart, Time-Lapses panel.
+### Layout At A Glance
+- **Top Bar:** Live status badge, progress, elapsed and ETA, hotend and bed temps, `?` to replay the tour, `AD5M` brand with your logo and favicon
+- **Left:** Print Status with progress bar, layer `cur/tot`, AI fail percent, elapsed and ETA, plus Pause, Resume, Cancel and a full GCode Console with Tab autocomplete
+- **Center:** Live Feed `640x480` MJPEG, green nozzle box, orange focus zone, `FAIL%` pill, 3m 05s setup timer, baseline and active states
+- **Right:** Temps with SET and OFF, Settings panel, Detector stats (Status, Certainty, Hits, Cycle), AI Confidence, Temp chart, Time-Lapses
+
+First launch triggers an interactive tour that spotlights every panel and setting. Skip anytime, hit `?` to replay.
 
 ---
 
 ## ⚙️ Settings
 
-Open via `OPEN` in the right column.
+Hit `OPEN` in the right column.
 
-### ALERTS tab:
-- Print Started.
-- Print Finished.
-- Paused (Manual).
-- Paused (Auto).
-- Canceled (Manual).
+### ALERTS Tab
+Toggle each Discord alert independently:
+- Print Started
+- Print Finished
+- Paused (Manual)
+- Paused (Auto)
+- Canceled (Manual)
 - Canceled (Auto)
 
-### AI Settings Tab:
-- **Failure Action:** `Pause` or `Cancel` **Note AI May Be False,** or `Nothing (Alert Only)`
-- **AI Confidence %:** 10% to 100%, default 100%. Minimum certainty before a detection counts.
-- **Consecutive Hits:** 1 to 30. How many back to back detections before counting as a **Failure Action**: Default `10`.
-- **HUD Bounding Boxes:** Nozzle Bounding box detection: Default `True`.
-- **Timelapse:** Enable or disable Timelapse recording.
-- **Timelapse HUD Overlay:** When on, **Hud Bounding Boxes** and **Status Bar** into timelapse frames. When off, saves clean video: Default `True`.
-- **Timelapse Interval:** 3 to 300. Seconds between captured frames. The bigger the number is the faster the video is, the lower the slower the timelapse is: Default `True`.
+### AI SETTINGS Tab
+- **Failure Action:** `Pause` or `Cancel` (heads up, AI may be wrong) or `Nothing (Alert Only)`
+- **AI Confidence %:** 10 to 100, default 100. How sure the AI must be before it counts
+- **Consecutive Hits:** 1 to 30, default `10`. How many hits in a row before it acts
+- **HUD Bounding Boxes:** Show the nozzle detection, default `True`
+- **Failure Overlay (Red):** Show the red change heatmap, logo stays even when off
+- **Timelapse:** On or off
+- **Timelapse HUD Overlay:** Burn boxes and status bar into video, off gives clean video, default `True`
+- **Timelapse Interval:** 3 to 300 seconds between frames, higher is faster video, default `10`
+- **Advanced Tuning:** Pixel Diff Threshold, Change Fraction, BG Adapt Alpha, Baseline Build Seconds, Baseline Delay Seconds
 
-### System Tab:
-- **Printer IP:** FlashForge host on LAN.
-- **Discord Webhook:** Webhook URL, ***Optional***.
-- **Discord User ID:** Mention ID, ***Optional***.
+### SYSTEM Tab
+- **Printer IP:** Your FlashForge on LAN
+- **Discord Webhook:** Optional webhook URL
+- **Discord User ID:** Optional ping ID
 
-### Panels:
-- Detector panel shows `Status`, `Certainty`, `Hits`, `Cycle`.
-- Timelapses panel lists finished videos with size and date and download links. Refreshes every 60s.
-
----
-> # How Stuff Works
->
-> ## Time-lapse
->
-> - Captures raw frames to `timelapses_raw/<timestamp>/` while printing, every `timelapse_interval` seconds.
-> - Finalizes on print end to `timelapses/timelapse_<timestamp>.mp4` (fallback `.avi` MJPG, 5 fps). Too few frames are discarded.
-> - If `Timelapse HUD Overlay` is on, each frame includes the live HUD boxes and a top bar `PRINTING | Layer x/y | AI n% | Hit a/b | MM-DD HH:MM:SS`. If off, frames are clean.
-> - Download via dashboard Time-Lapses panel or `GET /timelapse/<name>`, list via `GET /api/timelapses`.
->
->
-> ## Detection
->
-> - Single focus zone `ChangeDetector` against a stored baseline (color BGR). Diff is per pixel strongest BGR channel vs `PIXEL_DIFF_THRESHOLD = 90` (not grayscale, catches same color spaghetti).
-> - Setup: 185s setup timer then baseline build `BASELINE_BUILD_CYCLES`, then detection will be active.
-> - Failure Action: Triggers only after `failure_certainty` and `consecutive_hits` are met.
-
+### Panels
+- **Detector:** `Status`, `Certainty`, `Hits`, `Cycle`
+- **Time-Lapses:** Finished videos with size, date, and download link. Auto refreshes every 60s
 
 ---
 
-## 🌐 Remote access
+## 🔬 How It Actually Works
+
+### Time-lapse
+- Saves raw frames to `timelapses_raw/<timestamp>/` every `timelapse_interval` seconds while printing
+- On print end, stitches to `timelapses/timelapse_<timestamp>.mp4` (falls back to `.avi` MJPG at 5 fps). Too few frames are auto discarded
+- If `Timelapse HUD Overlay` is on, each frame gets `PRINTING | Layer x/y | AI n% | Hit a/b | MM-DD HH:MM:SS`. If off, clean video plus always on logo
+- Get them from the Time-Lapses panel or `GET /timelapse/<name>`, list via `GET /api/timelapses`
+
+### Detection
+- One focus zone `ChangeDetector` against a BGR baseline. It checks the strongest BGR channel per pixel versus `PIXEL_DIFF_THRESHOLD = 90`, not grayscale, so same color spaghetti still pops
+- Flow: 185s setup timer, then baseline build, then active
+- Only fires after `failure_certainty` and `consecutive_hits` are met, with motion blur skip, top strip masking, and adaptive baseline learning
+- Logo is baked into every HUD frame and every timelapse frame, no file needed
+
+### What The Installer Does
+1. **Python:** Prefers `~/miniforge3/bin/python3`, `~/mambaforge`, or `/opt/miniforge3`, else creates `env/` via micromamba or `python3-venv` on armv6, then installs `requirements.txt`
+2. **Camera:** Installs `libcamera-apps` if `rpicam-vid` is missing
+3. **Tailscale:** Installs via `tailscale.com/install.sh` if missing, runs `tailscale up` and shows `https://login.tailscale.com/a/...` if needed, adds passwordless `sudoers.d/ad5m-funnel`, enables `funnel --bg --https=443 5000` only after `config.json` exists
+4. **Services:** Creates `printer_watchdog.service` (`python -u Printer_watchdog.py`) and `camera_feed.service` (`python web_feed.py`) if not already active
+5. **Summary:** Prints `Local dashboard: http://[Pi_IP]:5000` and `Public dashboard: https://[name].ts.net` with fallback via `tailscale status --json`
+
+---
+
+## 🌐 Remote Access
 
 - **Local:** `http://[Pi_IP]:5000`
-- **Public:** `https://[name].ts.net` via `tailscale funnel --bg --https=443 5000`. Enabled only after setup wizard. Status via `sudo tailscale funnel status`, fallback `tailscale status --json` DNSName.
-- Installer and `web_feed.py` both use `--bg` so the command never blocks. Passwordless sudo allowed via `/etc/sudoers.d/ad5m-funnel`.
-- Custom `logo.png` placed next to code is served unauthenticated at `/logo.png` and used as top bar logo and favicon.
+- **Public:** `https://[name].ts.net` via `tailscale funnel --bg --https=443 5000`. Only goes live after setup wizard. Check with `sudo tailscale funnel status`
+- Both installer and `web_feed.py` use `--bg` so it never blocks. Passwordless sudo via `/etc/sudoers.d/ad5m-funnel`
+- Drop your `logo.png` next to the code and it becomes the top bar logo and favicon, otherwise the built in logo is used
 
 ---
 
-## 🔧 Services and files
+## 🔧 Services and Files
 
 ```bash
 sudo systemctl status printer_watchdog.service camera_feed.service
@@ -170,50 +182,50 @@ sudo journalctl -u camera_feed.service -n 100 --no-pager
 
 | File | Purpose |
 | :--- | :--- |
-| `Printer_watchdog.py` | Main watchdog, detection, timelapse, Discord alerts |
+| `Printer_watchdog.py` | Watchdog brain, detection, timelapse, alerts |
 | `web_feed.py` | Flask dashboard, auth, camera MJPEG, settings API |
-| `3D-Spaghetti_Setup` | Installer with --check/--uninstall/--reset |
+| `3D-Spaghetti_Setup` | Installer with check, uninstall, reset |
 | `requirements.txt` | `numpy`, `opencv-python-headless`, `flask`, `requests` |
-| `settings.json` | AI and alert settings |
-| `config.json` | Printer IP, webhook, user ID |
+| `settings.json` | Created, your AI and alert choices |
+| `config.json` | Created, printer IP, webhook, user ID |
 | `timelapses/` | Finished videos |
-| `timelapses_raw/` | Per print raw frames, removed after finalize |
-| `web_secret_key.txt` | Flask secret |
+| `timelapses_raw/` | Raw frames per print, auto removed after stitch |
+| `web_secret_key.txt` | Created, Flask secret |
 
 ---
 
 ## 🐛 Troubleshooting
 
-- **Installer appears stuck after `Tailscale connected`:** Older builds blocked on `funnel --https=443 5000`. Current build uses `timeout 15 ... --bg`. If stuck, `Ctrl-C`, `sudo pkill -9 -f "tailscale funnel"`, patch with `sed -i 's/funnel --https=443 5000/funnel --https=443 --bg 5000/g' 3D-Spaghetti_Setup`, re-run.
-- **Funnel shows `No serve config`:** Run `sudo tailscale funnel --bg --https=443 5000` or `sudo tailscale funnel --bg 5000`, then `sudo tailscale funnel status`.
-- **`inactive` services after --uninstall:** Expected. Re-run setup or `sudo systemctl enable --now printer_watchdog.service camera_feed.service`.
-- **White favicon / logo not showing:** Ensure `logo.png` is next to code and `/logo.png` is exempt from auth (fixed).
-- **Camera re-encoding stutter:** Fixed to re-encode only when `current_snap.jpg` mtime changes, JPEG quality 70.
-- **ETA or elapsed not moving:** Fixed in current build, requires genuine start condition.
-- **No Discord alerts:** Check webhook URL and use Test Discord in System tab.
+- **Installer stuck after `Tailscale connected`:** Old builds blocked on `funnel --https=443 5000`. Current uses `timeout 15 ... --bg`. Fix: `Ctrl-C`, `sudo pkill -9 -f "tailscale funnel"`, then `sed -i 's/funnel --https=443 5000/funnel --https=443 --bg 5000/g' 3D-Spaghetti_Setup` and re-run
+- **Funnel says `No serve config`:** Run `sudo tailscale funnel --bg --https=443 5000` or `sudo tailscale funnel --bg 5000`, then `sudo tailscale funnel status`
+- **`inactive` services after uninstall:** Expected, run `sudo systemctl enable --now printer_watchdog.service camera_feed.service` or just rerun setup
+- **White favicon or logo missing:** Put `logo.png` next to code and make sure `/logo.png` is exempt from auth, built in logo works even without file
+- **Camera stutter:** Fixed to re-encode only when `current_snap.jpg` changes, JPEG quality 70
+- **ETA not moving:** Fixed, needs a genuine start, power cycle is handled
+- **No Discord alerts:** Check webhook URL and hit Test Discord in System tab
 
 ---
 
-## 📁 Project structure
+## 📁 Project Structure
 
 ```
 3D-Spaghetti/
-  Printer_watchdog.py
-  web_feed.py
-  3D-Spaghetti_Setup
-  requirements.txt
-  index.html
-  logo.png            # optional, your branding
-  settings.json       # created
-  config.json         # created
-  timelapses/
-  timelapses_raw/
+  Printer_watchdog.py # Installed.
+  web_feed.py         # Installed.
+  3D-Spaghetti_Setup  # Installed.
+  requirements.txt    # Installed.
+  index.html          # Installed.
+  logo.png            # Installed.
+  settings.json       # Created automatically.
+  config.json         # Created automatically.
+  timelapses/         # Created automatically.
+  timelapses_raw/     # Created automatically.
 ```
 
 ---
 
-## Like the Project?
-Give it a ⭐ :)
+## Like This Project?
+Drop a ⭐ and share your prints!
 
-## Help in Development to get out of beta.
-Found a bug? Have a question? Want to Contribute? Join my [Discord](https://discord.gg/kBnARF7EV).
+## Want To Help Get It Out Of Beta?
+Found a bug? Got an idea? Want to contribute? Join the [Discord](https://discord.gg/kBnARF7EV).
