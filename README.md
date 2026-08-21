@@ -27,12 +27,12 @@ It is not called 3D-Spaghetti because it *makes* spaghetti, it is called that be
 OctoPrint and Obico are powerful, but they ask you to mod, flash, and risk your machine. 3D-Spaghetti plugs in natively. No hardware mods. No firmware flashing. Zero risk of **voiding your FlashForge factory warranty**. Pure plug and protect.
 
 ### ✨ What You Get
-- **🍝 Instant Spaghetti Detection** - Catches failures in seconds and auto pauses before your spool is gone
-- **🌍 Watch From Anywhere** - Crystal clear live camera stream, secure Tailscale tunnel, no port forwarding
-- **🎮 Full Remote Control** - Pause, resume, cancel, move axes, set temps, send GCode from your phone
-- **⚡ Photo Proof Alerts** - Discord pings with a snapshot the moment it pauses, plus start, finish, and manual events
-- **🎬 Auto Time-lapse** - Every print becomes a shareable MP4, with optional HUD overlay
-- **⏱ Smart Time Tracking** - Live ETA, Elapsed, and Total Time estimates after the first few layers
+- **Instant Spaghetti Detection** - Catches failures in seconds and auto pauses before your spool is gone
+- **Watch From Anywhere** - Crystal clear live camera stream, secure Tailscale tunnel, no port forwarding
+- **Full Remote Control** - Pause, resume, cancel, move axes, set temps, send GCode from your phone
+- **Photo Proof Alerts** - Discord pings with a snapshot the moment it pauses, plus start, finish, and manual events
+- **Auto Time-lapse** - Every print becomes a shareable MP4, with optional HUD overlay
+- **Smart Time Tracking** - Live ETA, Elapsed, and Total Time estimates after the first few layers
 
 > [!Warning]
 > - **Hardware Compatibility** - Tuned **only** for FlashForge AD5M <sub>(Adventurer 5M)</sub>. AD5X <sub>(Adventurer 5X)</sub> may work but is untested
@@ -91,7 +91,7 @@ Run it again anytime, it is idempotent and safe.
 
 ---
 
-## 🖥️ The Dashboard
+## The Dashboard
 
 Open `http://[Pi_IP]:5000` at home or `https://[name].ts.net` anywhere. One password you set, that is it.
 
@@ -140,7 +140,7 @@ Toggle each Discord alert independently:
 
 ---
 
-## 🔬 How It Actually Works
+## How It Actually Works
 
 ### Time-lapse
 - Saves raw frames to `timelapses_raw/<timestamp>/` every `timelapse_interval` seconds while printing
@@ -170,7 +170,7 @@ Toggle each Discord alert independently:
 
 ---
 
-## 🔧 Services and Files
+## 📁 Services and Files
 
 ```bash
 sudo systemctl status printer_watchdog.service camera_feed.service
