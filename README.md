@@ -15,22 +15,22 @@
 It is not called 3D-Spaghetti because it *makes* spaghetti **it detects it**. Not detecting only, it provides a full remote control panel.
 
 ### Why choose 3D-Spaghetti over alternatives?
-Unlike systems like OctoPrint or Obico, 3D-Spaghetti controls your machine natively without requiring any physical modding or firmware flashing. This ensures you never risk **voiding your FlashForge factory warranty**.
+Unlike systems, 3D-Spaghetti controls your machine natively without requiring any physical modding or firmware flashing. This ensures you never risk **voiding your FlashForge factory warranty**.
 
 ### ✨ Key Capabilities
 - **Spaghetti Detection** - Automatically pauses the print the moment a failure is detected.
 - **Global Print Monitoring** - Watch your live print camera stream securely from anywhere in the world.
 - **Remote Printer Control** - Access an interactive control panel to manage your machine on the go.
 - **Instant Failure Alerts** - Receive immediate notifications with photo evidence. <sub>(Also alerts on print start, end, or pauses)</sub>
-- **Time-lapse Recording** - Every finished print becomes a downloadable MP4 with optional HUD overlay.
-- **Guided First Visit Tour** - Interactive walkthrough that teaches every setting on first load.
+- **Time-lapse Recording** - Every finished print becomes a downloadable MP4.
+- **~ETA, Elapsed, and ~Total Time** - Every print after a few layers you will get a estimated time left <sub>(**ETA**)</sub>, you will also get how long it has been printing <sub>(**Elapsed**)</sub>, and you will get an estimation on the Total Time left <sub>(**Total Time**)</sub>.
 
-### 📓 Side Notes
-- **Hardware Compatibility** - Currently optimized **only** for the FlashForge AD5M <sub>(Adventurer 5M)</sub>. It may function with the AD5X <sub>(Adventurer 5X)</sub>, but it remains officially untested.
-- **Project Status** - 3D-Spaghetti is currently in active **Beta** and may contain minor bugs.
-- **AI Constraints** - This platform relies heavily on computer vision which <sub>***can*** occasionally make mistakes</sub>.
-- **Safety First** - The installation environment is **100% reversible** and will not damage your Raspberry Pi or your 3D printer.
-- **Disclaimer** - The Creator is not responsible for any software issues arising from unguided modifications to the codebase.
+> [!Warning]
+> - **Hardware Compatibility** - Currently optimized **only** for the FlashForge AD5M <sub>(Adventurer 5M)</sub>. It may function with the AD5X <sub>(Adventurer 5X)</sub>, but it remains officially untested.
+> - **Project Status** - 3D-Spaghetti is currently in active **Beta** and may contain minor bugs.
+> - **AI Constraints** - This platform relies heavily on computer vision which ***can*** occasionally make mistakes.
+> - **Safety First** - The installation environment is **100% reversible** and will not damage your Raspberry Pi or your 3D printer.
+> - **Disclaimer** - The Creator is not responsible for any software issues arising from unguided modifications to the codebase.
 
 ---
 
@@ -99,54 +99,55 @@ Open `http://[Pi_IP]:5000` locally or `https://[name].ts.net` remotely. Login us
 - **Center column:** Live Feed `640x480` MJPEG, green nozzle box, orange focus zone, `FAIL%` pill, 3m 05s setup timer, baseline and active states.
 - **Right column:** Temps and Controls (hotend/bed SET/OFF), Settings panel, Detector (Status/Certainty/Hits/Cycle), AI Confidence, Temps chart, Time-Lapses panel.
 
-### First visit tour
-Auto starts once via `localStorage`. 27 steps: top bar, print status, console, live feed, temps and settings, detector, time-lapses, then every setting tab and row. Each step highlights the target row, auto opens the settings panel and switches tabs. Skip at any time, replay with `?`.
-
 ---
 
 ## ⚙️ Settings
 
 Open via `OPEN` in the right column.
 
-### ALERTS tab
-Six Discord toggles, each independent, no Save needed:
-- Print Started, Print Finished, Paused (Manual), Paused (Auto), Canceled (Manual), Canceled (Auto)
+### ALERTS tab:
+- Print Started.
+- Print Finished.
+- Paused (Manual).
+- Paused (Auto).
+- Canceled (Manual).
+- Canceled (Auto)
 
-### AI SETTINGS tab (needs Save Settings)
-- **Failure Action:** `Pause` or `Cancel` (note: AI may be wrong) or `Nothing (Alert Only)`. Warning text below explains auto actions can be incorrect.
-- **AI Confidence %:** 10 to 100, default 75. Minimum certainty before a detection counts. Higher means fewer false hits.
-- **Consecutive Hits:** 1 to 30, default 6. How many back to back detections before acting.
-- **HUD Bounding Boxes:** Show or hide green nozzle and orange zone on live feed.
-- **Timelapse:** Enable or disable recording.
-- **Timelapse HUD Overlay:** When on, burns boxes and status bar into timelapse frames. When off, saves clean video.
-- **Timelapse Interval s:** 3 to 300, default 10. Seconds between captured frames.
+### AI Settings Tab:
+- **Failure Action:** `Pause` or `Cancel` **Note AI May Be False,** or `Nothing (Alert Only)`
+- **AI Confidence %:** 10% to 100%, default 100%. Minimum certainty before a detection counts.
+- **Consecutive Hits:** 1 to 30. How many back to back detections before counting as a **Failure Action**: Default `10`.
+- **HUD Bounding Boxes:** Nozzle Bounding box detection: Default `True`.
+- **Timelapse:** Enable or disable Timelapse recording.
+- **Timelapse HUD Overlay:** When on, **Hud Bounding Boxes** and **Status Bar** into timelapse frames. When off, saves clean video: Default `True`.
+- **Timelapse Interval:** 3 to 300. Seconds between captured frames. The bigger the number is the faster the video is, the lower the slower the timelapse is: Default `True`.
 
-### SYSTEM tab (needs Save System)
+### System Tab:
 - **Printer IP:** FlashForge host on LAN.
-- **Discord Webhook:** Webhook URL, leave empty to disable Discord.
-- **Discord User ID:** Optional mention ID.
-- Buttons: Save System, Test Discord.
+- **Discord Webhook:** Webhook URL, ***Optional***.
+- **Discord User ID:** Mention ID, ***Optional***.
 
-Detector panel shows `Status`, `Certainty`, `Hits`, `Cycle`. Time-Lapses panel lists finished videos with size and date and download links. Refreshes every 60s.
-
----
-
-## 🎞️ Time-lapse
-
-- Captures raw frames to `timelapses_raw/<timestamp>/` while printing, every `timelapse_interval` seconds.
-- Finalizes on print end to `timelapses/timelapse_<timestamp>.mp4` (fallback `.avi` MJPG, 5 fps). Too few frames are discarded.
-- If `Timelapse HUD Overlay` is on, each frame includes the live HUD boxes and a top bar `PRINTING | Layer x/y | AI n% | Hit a/b | MM-DD HH:MM:SS`. If off, frames are clean.
-- Download via dashboard Time-Lapses panel or `GET /timelapse/<name>`, list via `GET /api/timelapses`.
+### Panels:
+- Detector panel shows `Status`, `Certainty`, `Hits`, `Cycle`.
+- Timelapses panel lists finished videos with size and date and download links. Refreshes every 60s.
 
 ---
+> # How Stuff Works
+>
+> ## Time-lapse
+>
+> - Captures raw frames to `timelapses_raw/<timestamp>/` while printing, every `timelapse_interval` seconds.
+> - Finalizes on print end to `timelapses/timelapse_<timestamp>.mp4` (fallback `.avi` MJPG, 5 fps). Too few frames are discarded.
+> - If `Timelapse HUD Overlay` is on, each frame includes the live HUD boxes and a top bar `PRINTING | Layer x/y | AI n% | Hit a/b | MM-DD HH:MM:SS`. If off, frames are clean.
+> - Download via dashboard Time-Lapses panel or `GET /timelapse/<name>`, list via `GET /api/timelapses`.
+>
+>
+> ## Detection
+>
+> - Single focus zone `ChangeDetector` against a stored baseline (color BGR). Diff is per pixel strongest BGR channel vs `PIXEL_DIFF_THRESHOLD = 90` (not grayscale, catches same color spaghetti).
+> - Setup: 185s setup timer then baseline build `BASELINE_BUILD_CYCLES`, then detection will be active.
+> - Failure Action: Triggers only after `failure_certainty` and `consecutive_hits` are met.
 
-## 🔍 How detection works
-
-- Single focus zone `ChangeDetector` against a stored baseline (color BGR). Diff is per pixel strongest BGR channel vs `PIXEL_DIFF_THRESHOLD = 90` (not grayscale, catches same color spaghetti).
-- Flow: 185s setup timer (counts down even if nozzle is hidden) then baseline build `BASELINE_BUILD_CYCLES`, then active. Supports brief nozzle lost grace via `last_good_focus_rect` so boxes stay visible.
-- Triggers only after `failure_certainty` and `consecutive_hits` are met. Requires 3 consecutive idle polls to declare finished, with `FINISH_ALERTED` reset on real print start, prevents end spam.
-- Printer unreachable handling: idle/off shows `IDLE (SLEEP MODE)` and suppresses alerts, mid print unreachable keeps `PRINTING` so ETA stays live.
-- ETA and elapsed fixed to start clock on genuine print start (`PRINT_START_TIME is None` or idle big enough), so power cycling does not freeze timers.
 
 ---
 
