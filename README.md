@@ -167,8 +167,6 @@ Toggle each Discord alert independently:
 
 - **Local:** `http://[Pi_IP]:5000`
 - **Public:** `https://[name].ts.net` via `tailscale funnel --bg --https=443 5000`. Only goes live after setup wizard. Check with `sudo tailscale funnel status`
-- Both installer and `web_feed.py` use `--bg` so it never blocks. Passwordless sudo via `/etc/sudoers.d/ad5m-funnel`
-- Drop your `logo.png` next to the code and it becomes the top bar logo and favicon, otherwise the built in logo is used
 
 ---
 
