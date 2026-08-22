@@ -182,6 +182,7 @@ sudo journalctl -u camera_feed.service -n 100 --no-pager
 | :--- | :--- |
 | `Printer_watchdog.py` | Watchdog brain, detection, timelapse, alerts |
 | `web_feed.py` | Flask dashboard, auth, camera MJPEG, settings API |
+| `index.html` | Website HTML |
 | `3D-Spaghetti_Setup` | Installer with check, uninstall, reset |
 | `requirements.txt` | `numpy`, `opencv-python-headless`, `flask`, `requests` |
 | `settings.json` | Created, your AI and alert choices |
