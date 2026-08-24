@@ -24,7 +24,7 @@
 It is not called 3D-Spaghetti because it *makes* spaghetti, it is called that because it *hunts* it. This is not just a detector, it is a full remote command center for your printer.
 
 ### Why 3D-Spaghetti Crushes The Alternatives?
-OctoPrint and Obico are powerful, but they ask you to mod, flash, and risk your machine. 3D-Spaghetti plugs in natively. No hardware mods. No firmware flashing. Zero risk of **voiding your FlashForge factory warranty**. Pure plug and protect.
+Other systems are powerful, but they ask you to mod, flash, and risk your machine. 3D-Spaghetti plugs in natively. No hardware mods. No firmware flashing. Zero risk of **voiding your FlashForge factory warranty**. Pure plug and protect.
 
 ### ✨ What You Get
 - **Instant Spaghetti Detection** - Catches failures in seconds and auto pauses before your spool is gone
