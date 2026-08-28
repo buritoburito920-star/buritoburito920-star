@@ -96,12 +96,10 @@ Run it again anytime, it is idempotent and safe.
 Open `http://[Pi_IP]:5000` at home or `https://[name].ts.net` anywhere. One password you set, that is it.
 
 ### Layout At A Glance
-- **Top Bar:** Live status badge, progress, elapsed and ETA, hotend and bed temps, `?` to replay the tour, `AD5M` brand with your logo and favicon
-- **Left:** Print Status with progress bar, layer `cur/tot`, AI fail percent, elapsed and ETA, plus Pause, Resume, Cancel and a full GCode Console with Tab autocomplete
-- **Center:** Live Feed `640x480` MJPEG, green nozzle box, orange focus zone, `FAIL%` pill, 3m 05s setup timer, baseline and active states
-- **Right:** Temps with SET and OFF, Settings panel, Detector stats (Status, Certainty, Hits, Cycle), AI Confidence, Temp chart, Time-Lapses
-
-First launch triggers an interactive tour that spotlights every panel and setting. Skip anytime, hit `?` to replay.
+- **Top Bar:** Live status badge, progress, elapsed and ETA, hotend and bed temps, `?` to replay the tour, and settings menu.
+- **Left:** Print Status with progress bar, layer `cur/tot`, AI fail percent, elapsed and ETA, plus Pause, Resume, Cancel, and a full GCode Console ***(If Advanced is enabled in the settings)***.
+- **Center:** Live Feed `640x480` MJPEG, green nozzle box, orange focus zone, `FAIL%` pill, 3m 05s setup timer, baseline and active states.
+- **Right:** Temps with SET and OFF, Detector stats (Status, Certainty, Hits, Cycle), AI Confidence ***(If Advanced is enabled in the settings)***, Temp chart, Time-Lapses
 
 ---
 
