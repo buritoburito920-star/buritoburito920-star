@@ -161,10 +161,31 @@ Toggle each Discord alert independently:
 
 ---
 
-## 🌐 Remote Access
+## 🌐 Remote Access & Security
+### Connection Addresses
+* **Local Network:** `http://[Pi_IP]:5000`
+* **Global Access:** `https://[your-tailscale-name].ts.net`
 
-- **Local:** `http://[Pi_IP]:5000`
-- **Public:** `https://[name].ts.net` via `tailscale funnel --bg --https=443 5000`. Only goes live after setup wizard. Check with `sudo tailscale funnel status`
+### Setting Up Public Access
+The global link activates automatically after you complete the initial setup wizard. It uses a secure Tailscale tunnel. 
+* **Command to run:** `tailscale funnel --bg --https=443 5000`
+* **Check connection status:** `sudo tailscale funnel status`
+
+### ⚠️ Critical Security Warning
+**Never share your local IP address or your public Tailscale link with anyone.** 
+* **The Risk:** Sharing these links exposes your live camera feed and gives outsiders direct access to your machine. 
+* **The Danger:** Even though the built-in password system blocks basic access, a leaked link could still allow malicious users to inject raw G-code commands, abort active prints, or override hardware safety limits. Keep your links completely private.
+
+---
+
+## ⚙️ Customizability
+
+The background AI engine is fully adjustable to match your specific printing environment. You can easily tweak sensitivity, consecutive trigger checks, confidence thresholds, startup delays, and baseline creation times.
+
+### How to Change Settings:
+1. Open the main **Menu** on your dashboard.
+2. Select the **General** tab.
+3. Click on **Advanced** to access and modify any engine variables.```
 
 ---
 
