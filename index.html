@@ -276,6 +276,25 @@
     100%{ transform:translateX(-50%); }
   }
 
+  /* ---------- vitals monitor ---------- */
+  .vitals-panel{ margin-top:8px; }
+  .vitals-screen{ position:relative; background:#000; border-bottom:1px solid var(--border); }
+  canvas#vitals{ width:100%; height:180px; display:block; }
+  @media (max-width:600px){ canvas#vitals{ height:130px; } }
+  .vitals-status{
+    position:absolute; bottom:14px; left:18px;
+    font-family:'Press Start 2P'; font-size:11px; color:var(--green);
+    transition:color .15s;
+  }
+  .vitals-status.warn{ color:#ffb020; }
+  .vitals-status.crit{ color:var(--red); }
+  .vitals-status.shock{ color:#fff; }
+  .vitals-legend{ display:grid; grid-template-columns:repeat(3,1fr); }
+  .vitals-legend div{ padding:14px 18px; border-right:1px solid var(--border); border-top:1px solid var(--border); }
+  .vitals-legend div:last-child{ border-right:none; }
+  .vitals-legend .k{ font-size:9px; color:var(--dim); margin-bottom:8px; font-family:'Press Start 2P'; }
+  .vitals-legend .v{ font-size:16px; color:var(--green); font-family:'Press Start 2P'; }
+
   /* ---------- section headers ---------- */
   .sec-head{ margin-bottom:52px; max-width:60ch; }
   .sec-head .tag{ font-size:10px; color:var(--orange); margin-bottom:16px; }
@@ -436,6 +455,29 @@
 <div class="ticker-wrap">
   <div class="ticker" id="tickerTrack"></div>
 </div>
+
+<section id="vitals">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="tag">▸ WHY IT MATTERS</div>
+      <h2>Every print has a pulse.<br>Something should watch it.</h2>
+      <p>Think of it as a heart monitor for your print. A steady rhythm means everything's fine. The moment it flatlines, the system shocks it back under control &mdash; by pausing the printer before the spool empties into a nest.</p>
+    </div>
+
+    <div class="panel vitals-panel pxframe"><span class="c2"></span><span class="c3"></span>
+      <div class="panel-title">▸ PRINT VITALS <span class="meta" id="vitalsMeta">BPM 000</span></div>
+      <div class="vitals-screen">
+        <canvas id="vitals" width="600" height="180"></canvas>
+        <div class="vitals-status" id="vitalsStatus">SINUS RHYTHM</div>
+      </div>
+      <div class="vitals-legend">
+        <div><div class="k">LEAD</div><div class="v">DETECTOR-I</div></div>
+        <div><div class="k">PATIENT</div><div class="v">AD5M #01</div></div>
+        <div><div class="k">ON FLATLINE</div><div class="v">AUTO-PAUSE</div></div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <section id="overview">
   <div class="wrap">
@@ -733,6 +775,112 @@
 
   let willFail = true; // alternate rounds
 
+  // ---------- vitals monitor (EKG) ----------
+  const vcanvas = document.getElementById('vitals');
+  const vctx = vcanvas.getContext('2d');
+  vctx.imageSmoothingEnabled = false;
+  const VW = vcanvas.width, VH = vcanvas.height;
+  const vitalsMeta = document.getElementById('vitalsMeta');
+  const vitalsStatus = document.getElementById('vitalsStatus');
+  let ecgBuffer = new Array(VW).fill(0);
+  let beatClock = 0;
+  let shockFlash = 0;
+
+  function pushSample(v){
+    ecgBuffer.push(v);
+    if(ecgBuffer.length > VW) ecgBuffer.shift();
+  }
+
+  // amplitude for a normal PQRST beat given phase 0..1
+  function pqrst(phase){
+    if(phase > 0.08 && phase < 0.12) return -6 * Math.sin((phase-0.08)/0.04*Math.PI); // P
+    if(phase > 0.17 && phase < 0.185) return 8;                                        // Q
+    if(phase >= 0.185 && phase < 0.21) return -55 * Math.sin((phase-0.185)/0.025*Math.PI); // R spike
+    if(phase > 0.21 && phase < 0.235) return 12;                                       // S
+    if(phase > 0.30 && phase < 0.46) return -14 * Math.sin((phase-0.30)/0.16*Math.PI); // T
+    return 0;
+  }
+
+  function drawVitalsGrid(){
+    vctx.fillStyle = '#02060a';
+    vctx.fillRect(0,0,VW,VH);
+    vctx.strokeStyle = 'rgba(56,217,141,0.08)';
+    vctx.lineWidth = 1;
+    for(let x=0;x<VW;x+=20){ vctx.beginPath(); vctx.moveTo(x,0); vctx.lineTo(x,VH); vctx.stroke(); }
+    for(let y=0;y<VH;y+=20){ vctx.beginPath(); vctx.moveTo(0,y); vctx.lineTo(VW,y); vctx.stroke(); }
+  }
+
+  function setVitals(bpm, label, cls){
+    vitalsMeta.textContent = 'BPM ' + String(bpm).padStart(3,'0');
+    vitalsStatus.textContent = label;
+    vitalsStatus.className = 'vitals-status' + (cls ? ' '+cls : '');
+  }
+
+  function drawVitals(mode, modeTimer){
+    const midY = VH/2;
+    let sample = 0;
+
+    if(mode === 'building'){
+      beatClock += 1/34; // ~34 frame period, steady
+      const phase = beatClock % 1;
+      sample = pqrst(phase) + (Math.random()-0.5)*1.2;
+      setVitals(74, 'SINUS RHYTHM', '');
+    }
+    else if(mode === 'spaghetti' && modeTimer < 16){
+      beatClock += 1/(20 - modeTimer*0.6); // speeding up, erratic
+      const phase = beatClock % 1;
+      sample = pqrst(phase)*(1+modeTimer*0.03) + (Math.random()-0.5)*8;
+      setVitals(90 + modeTimer*4, 'IRREGULAR RHYTHM', 'warn');
+    }
+    else if(mode === 'spaghetti'){
+      sample = (Math.random()-0.5)*1.5;
+      setVitals(0, 'FLATLINE — NO PULSE', 'crit');
+    }
+    else if(mode === 'paused' && modeTimer < 14){
+      sample = (Math.random()-0.5)*1;
+      setVitals(0, 'CHARGING...', 'warn');
+    }
+    else if(mode === 'paused' && modeTimer < 18){
+      sample = modeTimer === 14 ? -VH*0.9 : (Math.random()-0.5)*4;
+      if(modeTimer === 14) shockFlash = 6;
+      setVitals(0, 'CLEAR!', 'shock');
+    }
+    else if(mode === 'paused'){
+      beatClock += 1/48; // slower, calmer restored rhythm
+      const phase = beatClock % 1;
+      sample = pqrst(phase)*0.6 + (Math.random()-0.5)*1;
+      setVitals(58, 'RHYTHM RESTORED · PAUSED SAFE', '');
+    }
+    else if(mode === 'done'){
+      beatClock += 1/34;
+      const phase = beatClock % 1;
+      sample = pqrst(phase) + (Math.random()-0.5)*1.2;
+      setVitals(76, 'NOMINAL', '');
+    }
+    else{
+      sample = 0;
+    }
+
+    pushSample(sample);
+    drawVitalsGrid();
+
+    vctx.strokeStyle = shockFlash > 0 ? '#ffffff' : (vitalsStatus.className.includes('crit') ? '#ff5252' : vitalsStatus.className.includes('warn') ? '#ffb020' : '#38d98d');
+    vctx.lineWidth = 2;
+    vctx.beginPath();
+    for(let i=0;i<ecgBuffer.length;i++){
+      const x = i;
+      const y = midY + ecgBuffer[i];
+      if(i===0) vctx.moveTo(x,y); else vctx.lineTo(x,y);
+    }
+    vctx.stroke();
+
+    if(shockFlash > 0){
+      vctx.fillStyle = 'rgba(255,255,255,0.5)';
+      vctx.fillRect(0,0,VW,VH);
+      shockFlash--;
+    }
+  }
+
   function step(){
     modeTimer++;
     drawBed();
@@ -779,6 +927,8 @@
       layer = 0; willFail = !willFail; mode='building'; modeTimer=0;
     }
 
+    drawVitals(mode, modeTimer);
+
     if(!reduced){ requestAnimationFrame(step); }
   }
 
@@ -786,6 +936,8 @@
     drawBed(); layer = 10; drawPrint(layer);
     statNum.textContent = '0%'; statHits.textContent = '0/10';
     feedCaption.textContent = 'Layer 10/16';
+    drawVitalsGrid();
+    setVitals(74, 'SINUS RHYTHM', '');
   } else {
     requestAnimationFrame(step);
   }
