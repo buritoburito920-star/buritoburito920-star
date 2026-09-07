@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D-Spaghetti // Printer Guardian</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0d13;
+    --bg2:#0e1219;
+    --panel:#10151d;
+    --panel-alt:#141a24;
+    --border:#232c3a;
+    --border-lit:#3a4658;
+    --text:#c8d2e0;
+    --dim:#5c6879;
+    --orange:#ff8a1e;
+    --orange-dim:#7a4a1f;
+    --blue:#4da8ff;
+    --green:#38d98d;
+    --red:#ff5252;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'VT323', monospace;
+    font-size:19px;
+    line-height:1.5;
+    image-rendering:pixelated;
+    overflow-x:hidden;
+  }
+
+  h1,h2,h3, .pixel-font, .logo, nav a, .btn, .badge, .panel-title, .stat-num, .eyebrow-pixel{
+    font-family:'Press Start 2P', monospace;
+  }
+
+  ::selection{ background:var(--orange); color:#0a0d13; }
+
+  a{ color:inherit; text-decoration:none; }
+
+  img, svg{ image-rendering:pixelated; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; }
+  }
+
+  /* ---------- scanline overlay ---------- */
+  .scanlines{
+    pointer-events:none;
+    position:fixed; inset:0; z-index:200;
+    background:repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.14) 0px,
+      rgba(0,0,0,0.14) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    mix-blend-mode:overlay;
+    opacity:0.55;
+  }
+  .vignette{
+    pointer-events:none;
+    position:fixed; inset:0; z-index:199;
+    background:radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
+  }
+
+  .flicker{
+    animation: flicker 0.25s steps(1) 3;
+  }
+  @keyframes flicker{
+    0%{ opacity:1; } 15%{ opacity:0.4; } 30%{ opacity:1; } 45%{ opacity:0.5; } 60%{ opacity:1; }
+  }
+
+  /* ---------- pixel corner brackets ---------- */
+  .pxframe{ position:relative; }
+  .pxframe::before, .pxframe::after,
+  .pxframe .c2, .pxframe .c3{
+    content:""; position:absolute; width:9px; height:9px; pointer-events:none;
+  }
+  .pxframe::before{ /* top-left */
+    top:-1px; left:-1px;
+    background:
+      linear-gradient(var(--orange),var(--orange)) top left / 100% 3px no-repeat,
+      linear-gradient(var(--orange),var(--orange)) top left / 3px 100% no-repeat;
+  }
+  .pxframe::after{ /* bottom-right */
+    bottom:-1px; right:-1px;
+    background:
+      linear-gradient(var(--orange),var(--orange)) bottom right / 100% 3px no-repeat,
+      linear-gradient(var(--orange),var(--orange)) bottom right / 3px 100% no-repeat;
+  }
+  .pxframe .c2{ /* top-right */
+    top:-1px; right:-1px;
+    background:
+      linear-gradient(var(--orange),var(--orange)) top right / 100% 3px no-repeat,
+      linear-gradient(var(--orange),var(--orange)) top right / 3px 100% no-repeat;
+  }
+  .pxframe .c3{ /* bottom-left */
+    bottom:-1px; left:-1px;
+    background:
+      linear-gradient(var(--orange),var(--orange)) bottom left / 100% 3px no-repeat,
+      linear-gradient(var(--orange),var(--orange)) bottom left / 3px 100% no-repeat;
+  }
+  .pxframe.blue::before, .pxframe.blue::after, .pxframe.blue .c2, .pxframe.blue .c3{
+    background-color:transparent;
+  }
+  .pxframe.blue::before{ background-image:
+      linear-gradient(var(--blue),var(--blue)),
+      linear-gradient(var(--blue),var(--blue)); }
+  .pxframe.blue::after{ background-image:
+      linear-gradient(var(--blue),var(--blue)),
+      linear-gradient(var(--blue),var(--blue)); }
+  .pxframe.blue .c2{ background-image:
+      linear-gradient(var(--blue),var(--blue)),
+      linear-gradient(var(--blue),var(--blue)); }
+  .pxframe.blue .c3{ background-image:
+      linear-gradient(var(--blue),var(--blue)),
+      linear-gradient(var(--blue),var(--blue)); }
+
+  /* pixel dashed rule */
+  .pixel-rule{
+    height:6px; width:100%;
+    background-image: linear-gradient(90deg, var(--orange) 0 8px, transparent 8px 16px);
+    background-size:16px 6px;
+    opacity:0.7;
+  }
+
+  /* ---------- layout shells ---------- */
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 28px; }
+  section{ padding:96px 0; border-top:1px solid var(--border); }
+  section:first-of-type{ border-top:none; }
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--border);
+    position:relative;
+  }
+  .panel-title{
+    font-size:11px;
+    letter-spacing:0.5px;
+    color:var(--orange);
+    padding:12px 14px;
+    border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--panel-alt);
+  }
+  .panel-title .meta{ color:var(--dim); font-size:10px; }
+  .panel-body{ padding:20px; }
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky; top:0; z-index:100;
+    background:rgba(10,13,19,0.92);
+    backdrop-filter:blur(4px);
+    border-bottom:1px solid var(--border);
+  }
+  header .wrap{
+    display:flex; align-items:center; justify-content:space-between;
+    height:64px;
+  }
+  .logo{ display:flex; align-items:center; gap:10px; font-size:13px; color:var(--text); }
+  .logo .dot{
+    width:12px; height:12px; background:var(--orange);
+    box-shadow: 3px 0 0 var(--orange), 0 3px 0 var(--orange), -3px 0 0 var(--orange), 0 -3px 0 var(--orange);
+    animation:blink 1.6s steps(1) infinite;
+  }
+  @keyframes blink{ 0%,49%{opacity:1;} 50%,100%{opacity:0.25;} }
+
+  nav{ display:flex; gap:26px; }
+  nav a{ font-size:10px; color:var(--dim); transition:color .15s; }
+  nav a:hover{ color:var(--orange); }
+  @media (max-width:760px){ nav{ display:none; } }
+
+  .btn{
+    display:inline-block;
+    font-size:11px;
+    color:#0a0d13;
+    background:var(--orange);
+    padding:12px 16px;
+    border:1px solid var(--orange);
+    box-shadow:4px 4px 0 var(--orange-dim);
+    transition:transform .08s, box-shadow .08s;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .btn:hover{ transform:translate(1px,1px); box-shadow:2px 2px 0 var(--orange-dim); }
+  .btn:active{ transform:translate(4px,4px); box-shadow:0 0 0 var(--orange-dim); }
+  .btn.ghost{
+    background:transparent; color:var(--text); border:1px solid var(--border-lit);
+    box-shadow:4px 4px 0 var(--border);
+  }
+  .btn.ghost:hover{ color:var(--orange); border-color:var(--orange); }
+  .btn.small{ padding:9px 12px; font-size:9px; }
+  .btn-row{ display:flex; gap:14px; flex-wrap:wrap; margin-top:34px; }
+
+  /* ---------- hero ---------- */
+  .hero{ padding-top:72px; padding-bottom:60px; border-top:none; }
+  .hero .wrap{
+    display:grid; grid-template-columns:1.05fr 1fr; gap:56px; align-items:center;
+  }
+  @media (max-width:900px){ .hero .wrap{ grid-template-columns:1fr; } }
+
+  .status-pill{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:9px; color:var(--green);
+    border:1px solid var(--green);
+    padding:6px 10px;
+    margin-bottom:22px;
+  }
+  .status-pill .led{ width:6px; height:6px; background:var(--green); animation:blink 1s steps(1) infinite; }
+
+  h1{
+    font-size:30px; line-height:1.55; color:#fff;
+    text-shadow:3px 3px 0 var(--orange-dim);
+  }
+  @media (max-width:520px){ h1{ font-size:23px; } }
+
+  .lede{
+    margin-top:26px; font-size:22px; color:var(--dim); max-width:52ch; line-height:1.5;
+  }
+  .lede b{ color:var(--text); font-weight:normal; }
+
+  .stat-row{ display:flex; gap:34px; margin-top:40px; flex-wrap:wrap; }
+  .stat-num{ font-size:20px; color:var(--orange); }
+  .stat-label{ font-size:13px; color:var(--dim); margin-top:8px; }
+
+  /* live feed mock */
+  .feed-panel .panel-title span.live{ color:var(--green); }
+  .feed-screen{
+    aspect-ratio:4/3; background:#000; position:relative; overflow:hidden;
+    border-bottom:1px solid var(--border);
+  }
+  canvas#feed{ width:100%; height:100%; display:block; image-rendering:pixelated; }
+  .feed-hud{
+    position:absolute; inset:0; pointer-events:none;
+    font-size:11px; color:var(--orange);
+    padding:8px;
+    display:flex; flex-direction:column; justify-content:space-between;
+  }
+  .feed-hud .top-row{ display:flex; justify-content:space-between; }
+  .feed-hud .rec{ color:var(--red); display:flex; gap:5px; align-items:center; }
+  .feed-hud .rec i{ width:7px; height:7px; background:var(--red); display:inline-block; animation:blink .8s steps(1) infinite; }
+  .feed-caption{ color:var(--dim); font-size:11px; }
+  .feed-stats{ display:grid; grid-template-columns:1fr 1fr; }
+  .feed-stats div{ padding:14px 16px; border-right:1px solid var(--border); border-top:1px solid var(--border); }
+  .feed-stats div:nth-child(2n){ border-right:none; }
+  .feed-stats .k{ font-size:9px; color:var(--dim); margin-bottom:8px; }
+  .feed-stats .v{ font-size:16px; color:var(--blue); font-family:'Press Start 2P'; }
+  .feed-stats .v.o{ color:var(--orange); }
+
+  /* ---------- ticker ---------- */
+  .ticker-wrap{
+    border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+    background:var(--panel-alt);
+    overflow:hidden; white-space:nowrap;
+    padding:14px 0;
+  }
+  .ticker{
+    display:inline-block;
+    font-family:'Press Start 2P';
+    font-size:11px;
+    color:var(--dim);
+    animation:scroll-left 32s linear infinite;
+  }
+  .ticker span{ color:var(--orange); margin:0 18px; }
+  @keyframes scroll-left{
+    0%{ transform:translateX(0); }
+    100%{ transform:translateX(-50%); }
+  }
+
+  /* ---------- section headers ---------- */
+  .sec-head{ margin-bottom:52px; max-width:60ch; }
+  .sec-head .tag{ font-size:10px; color:var(--orange); margin-bottom:16px; }
+  .sec-head h2{ font-size:24px; color:#fff; line-height:1.5; }
+  .sec-head p{ margin-top:18px; font-size:20px; color:var(--dim); }
+
+  /* ---------- features ---------- */
+  .grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+  @media (max-width:900px){ .grid{ grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:600px){ .grid{ grid-template-columns:1fr; } }
+
+  .feat{
+    background:var(--panel); border:1px solid var(--border); padding:26px;
+    transition:border-color .15s, transform .15s;
+  }
+  .feat:hover{ border-color:var(--orange); transform:translateY(-3px); }
+  .badge{
+    width:46px; height:46px; display:flex; align-items:center; justify-content:center;
+    border:1px solid var(--border-lit); color:var(--orange); font-size:20px; margin-bottom:20px;
+    background:var(--panel-alt);
+  }
+  .feat h3{ font-family:'VT323'; font-size:22px; color:#fff; letter-spacing:0.3px; }
+  .feat p{ margin-top:10px; color:var(--dim); font-size:18px; }
+
+  /* ---------- how it works ---------- */
+  .flow{ display:grid; grid-template-columns:repeat(4,1fr); gap:0; }
+  @media (max-width:820px){ .flow{ grid-template-columns:1fr 1fr; } }
+  @media (max-width:480px){ .flow{ grid-template-columns:1fr; } }
+  .flow-step{
+    border:1px solid var(--border); padding:22px; position:relative;
+    margin-left:-1px; margin-top:-1px;
+  }
+  .flow-step .n{ font-family:'Press Start 2P'; font-size:11px; color:var(--orange); }
+  .flow-step h4{ font-family:'VT323'; font-size:20px; color:#fff; margin-top:14px; }
+  .flow-step p{ font-size:17px; color:var(--dim); margin-top:8px; }
+
+  /* ---------- requirements ---------- */
+  .req-grid{ display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+  @media (max-width:700px){ .req-grid{ grid-template-columns:1fr; } }
+  .req-col{ background:var(--panel); border:1px solid var(--border); }
+  .req-col.rec{ border-color:var(--orange); }
+  .req-col .req-title{
+    padding:14px 18px; font-size:11px; border-bottom:1px solid var(--border);
+    background:var(--panel-alt); color:var(--text);
+  }
+  .req-col.rec .req-title{ color:var(--orange); }
+  .req-col ul{ list-style:none; padding:18px; }
+  .req-col li{ padding:9px 0; font-size:18px; border-bottom:1px dashed var(--border); color:var(--dim); }
+  .req-col li:last-child{ border-bottom:none; }
+  .req-col li b{ color:var(--text); font-weight:normal; }
+  .req-note{ margin-top:22px; font-size:16px; color:var(--dim); }
+  .req-note b{ color:var(--blue); font-weight:normal; }
+
+  /* ---------- install ---------- */
+  .install-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:22px; }
+  @media (max-width:820px){ .install-grid{ grid-template-columns:1fr; } }
+  .term{
+    background:#05070a; border:1px solid var(--border);
+  }
+  .term-bar{
+    display:flex; gap:7px; padding:10px 12px; border-bottom:1px solid var(--border);
+    background:var(--panel-alt);
+  }
+  .term-bar i{ width:9px; height:9px; display:inline-block; }
+  .term-bar i:nth-child(1){ background:var(--red); }
+  .term-bar i:nth-child(2){ background:var(--orange); }
+  .term-bar i:nth-child(3){ background:var(--green); }
+  .term-body{ padding:18px; font-size:17px; min-height:120px; }
+  .term-body .step-label{ font-family:'Press Start 2P'; font-size:9px; color:var(--orange); margin-bottom:14px; }
+  .term-body p{ color:var(--dim); margin-bottom:10px; }
+  .term-body .cmd{ color:var(--green); }
+  .term-body .cmd::before{ content:"$ "; color:var(--dim); }
+  .cursor-blink{ display:inline-block; width:9px; height:16px; background:var(--green); animation:blink .9s steps(1) infinite; vertical-align:middle; margin-left:2px; }
+
+  /* ---------- warning box ---------- */
+  .warn{
+    border:1px solid var(--red); border-left:6px solid var(--red);
+    background:rgba(255,82,82,0.06); padding:24px 26px;
+  }
+  .warn .warn-title{ font-family:'Press Start 2P'; font-size:11px; color:var(--red); margin-bottom:16px; }
+  .warn ul{ padding-left:22px; }
+  .warn li{ font-size:18px; color:var(--dim); margin-bottom:8px; }
+  .warn li b{ color:var(--text); font-weight:normal; }
+
+  /* ---------- footer ---------- */
+  footer{ padding:70px 0 50px; }
+  .foot-grid{
+    display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:34px;
+    padding-bottom:34px; border-bottom:1px solid var(--border);
+  }
+  .foot-cta h2{ font-size:22px; color:#fff; line-height:1.5; max-width:22ch; }
+  .foot-links{ display:flex; gap:16px; flex-wrap:wrap; }
+  .fine{ margin-top:28px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:14px; color:var(--dim); }
+  .fine a:hover{ color:var(--orange); }
+
+  .marching{
+    height:4px; margin-bottom:0;
+    background-image:linear-gradient(90deg, var(--border-lit) 0 10px, transparent 10px 20px);
+    background-size:20px 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<header>
+  <div class="wrap">
+    <div class="logo"><span class="dot"></span> 3D-SPAGHETTI</div>
+    <nav>
+      <a href="#overview">OVERVIEW</a>
+      <a href="#features">FEATURES</a>
+      <a href="#install">INSTALL</a>
+      <a href="#requirements">REQUIREMENTS</a>
+    </nav>
+    <a class="btn small" href="https://github.com/buritoburito920-star/buritoburito920-star" target="_blank" rel="noopener">VIEW ON GITHUB</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <div class="status-pill"><span class="led"></span> ACTIVE BETA · AD5M SUPPORTED</div>
+      <h1 class="flicker">YOUR PRINTER'S<br>NEW GUARDIAN ANGEL</h1>
+      <p class="lede">3D-Spaghetti watches your FlashForge AD5M through a Pi camera and <b>auto-pauses the moment a print goes sideways</b> &mdash; no firmware flashing, no warranty risk, just a webcam that never falls asleep.</p>
+      <div class="stat-row">
+        <div><div class="stat-num">0</div><div class="stat-label">HARDWARE MODS</div></div>
+        <div><div class="stat-num">185s</div><div class="stat-label">SETUP TIMER</div></div>
+        <div><div class="stat-num">MIT</div><div class="stat-label">LICENSE</div></div>
+      </div>
+      <div class="btn-row">
+        <a class="btn" href="https://github.com/buritoburito920-star/buritoburito920-star/archive/refs/heads/main.zip">DOWNLOAD ZIP</a>
+        <a class="btn ghost" href="https://github.com/buritoburito920-star/buritoburito920-star" target="_blank" rel="noopener">FIND IT ON GITHUB</a>
+      </div>
+    </div>
+
+    <div class="panel feed-panel pxframe"><span class="c2"></span><span class="c3"></span>
+      <div class="panel-title">▸ LIVE FEED <span class="meta">640×480 MJPEG</span></div>
+      <div class="feed-screen">
+        <canvas id="feed" width="256" height="192"></canvas>
+        <div class="feed-hud">
+          <div class="top-row">
+            <span id="feedStatus">CONNECTING...</span>
+            <span class="rec" id="recWrap" style="visibility:hidden;"><i></i>LIVE</span>
+          </div>
+          <span id="feedCaption" class="feed-caption"></span>
+        </div>
+      </div>
+      <div class="feed-stats">
+        <div><div class="k">DETECTOR STATUS</div><div class="v o" id="statNum">0%</div></div>
+        <div><div class="k">CONSECUTIVE HITS</div><div class="v" id="statHits">0/10</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="ticker-wrap">
+  <div class="ticker" id="tickerTrack"></div>
+</div>
+
+<section id="overview">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="tag">▸ OVERVIEW</div>
+      <h2>It doesn't make spaghetti.<br>It hunts it.</h2>
+      <p>Most failure-catchers ask you to mod, flash, or gamble with your printer's warranty. 3D-Spaghetti plugs in natively on a Raspberry Pi and reads what your camera already sees &mdash; zero modification, fully reversible, install and uninstall in one command.</p>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step pxframe"><span class="c2"></span><span class="c3"></span>
+        <div class="n">01</div>
+        <h4>Setup timer</h4>
+        <p>A 185 second window while your bed and hotend settle, so the camera never mistakes warm-up for a problem.</p>
+      </div>
+      <div class="flow-step pxframe"><span class="c2"></span><span class="c3"></span>
+        <div class="n">02</div>
+        <h4>Baseline build</h4>
+        <p>The detector learns the calm, printing-as-expected frame it should be comparing every new one against.</p>
+      </div>
+      <div class="flow-step pxframe"><span class="c2"></span><span class="c3"></span>
+        <div class="n">03</div>
+        <h4>Active watch</h4>
+        <p>Every frame is checked pixel by pixel against the baseline, filtering out motion blur and nozzle shadow.</p>
+      </div>
+      <div class="flow-step pxframe"><span class="c2"></span><span class="c3"></span>
+        <div class="n">04</div>
+        <h4>Auto-response</h4>
+        <p>Once certainty and consecutive hits are met, it pauses, cancels, or just alerts you &mdash; your call.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="tag">▸ WHAT YOU GET</div>
+      <h2>A full remote command center, not just a tripwire.</h2>
+    </div>
+
+    <div class="grid">
+      <div class="feat">
+        <div class="badge">◈</div>
+        <h3>Instant detection</h3>
+        <p>Catches a failure in seconds and pauses before your whole spool turns into a nest.</p>
+      </div>
+      <div class="feat">
+        <div class="badge">▂▄▆█</div>
+        <h3>Watch from anywhere</h3>
+        <p>A clear live stream over a secure Tailscale tunnel &mdash; no port forwarding, no exposed router.</p>
+      </div>
+      <div class="feat">
+        <div class="badge">▦</div>
+        <h3>Full remote control</h3>
+        <p>Pause, resume, cancel, move axes, set temps, or send raw G-code straight from your phone.</p>
+      </div>
+      <div class="feat">
+        <div class="badge">◉</div>
+        <h3>Photo-proof alerts</h3>
+        <p>Discord pings with a snapshot the instant it pauses, plus start, finish, and manual events.</p>
+      </div>
+      <div class="feat">
+        <div class="badge">▥</div>
+        <h3>Auto time-lapse</h3>
+        <p>Every print becomes a shareable MP4, with an optional HUD overlay burned right in.</p>
+      </div>
+      <div class="feat">
+        <div class="badge">◷</div>
+        <h3>Smart time tracking</h3>
+        <p>Live ETA, elapsed, and total-time estimates that settle in after the first few layers.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="tag">▸ SETUP &amp; INSTALLATION</div>
+      <h2>Four steps. One Pi. No soldering.</h2>
+      <p>Verified live on a Raspberry Pi 4 &mdash; other boards work with small tweaks.</p>
+    </div>
+
+    <div class="install-grid">
+      <div class="term">
+        <div class="term-bar"><i></i><i></i><i></i></div>
+        <div class="term-body">
+          <div class="step-label">STEP 1 // PREP YOUR NETWORK</div>
+          <p>Grab your Raspberry Pi IP and your FlashForge printer IP (port 8899 is fixed). Optional: make a Discord webhook for personal alerts.</p>
+        </div>
+      </div>
+      <div class="term">
+        <div class="term-bar"><i></i><i></i><i></i></div>
+        <div class="term-body">
+          <div class="step-label">STEP 2 // GET YOUR TOOLS</div>
+          <p>Install PuTTY and FileZilla (or any SSH/SFTP client), then download the 3D-Spaghetti folder from GitHub.</p>
+        </div>
+      </div>
+      <div class="term">
+        <div class="term-bar"><i></i><i></i><i></i></div>
+        <div class="term-body">
+          <div class="step-label">STEP 3 // CONNECT TO YOUR PI</div>
+          <p>SSH in with PuTTY, or drag the folder over with FileZilla via SFTP on port 22.</p>
+        </div>
+      </div>
+      <div class="term">
+        <div class="term-bar"><i></i><i></i><i></i></div>
+        <div class="term-body">
+          <div class="step-label">STEP 4 // DEPLOY AND GO</div>
+          <p class="cmd">cd /path/to/3D-Spaghetti</p>
+          <p class="cmd">bash 3D-Spaghetti_Setup --check</p>
+          <p class="cmd">bash 3D-Spaghetti_Setup<span class="cursor-blink"></span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="requirements">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="tag">▸ HARDWARE CHECK</div>
+      <h2>What it runs on.</h2>
+    </div>
+
+    <div class="req-grid">
+      <div class="req-col">
+        <div class="req-title">MINIMUM</div>
+        <ul>
+          <li>Raspberry Pi 3 <b>(4GB RAM)</b></li>
+          <li>720p Pi Camera Module</li>
+          <li>Quality power brick + cable</li>
+          <li>Fast Micro SD card</li>
+        </ul>
+      </div>
+      <div class="req-col rec">
+        <div class="req-title">RECOMMENDED</div>
+        <ul>
+          <li>Raspberry Pi 4 <b>(8GB RAM)</b></li>
+          <li>1080p Pi Camera Module</li>
+          <li>Quality power brick + cable</li>
+          <li>Fast Micro SD card</li>
+        </ul>
+      </div>
+    </div>
+    <p class="req-note">Software side: <b>Raspberry Pi OS</b> (Bullseye or Bookworm), Python 3.11, rpicam-vid / libcamera-apps, and Tailscale.</p>
+  </div>
+</section>
+
+<section id="warning">
+  <div class="wrap">
+    <div class="warn pxframe"><span class="c2"></span><span class="c3"></span>
+      <div class="warn-title">⚠ BEFORE YOU FLASH THAT SD CARD</div>
+      <ul>
+        <li><b>Hardware fit</b> &mdash; tuned only for the FlashForge AD5M. AD5X may work but is untested.</li>
+        <li><b>Beta status</b> &mdash; active development, expect polish updates and the occasional bug.</li>
+        <li><b>AI honesty</b> &mdash; computer vision is powerful but can be wrong. Use Pause or Cancel at your own risk.</li>
+        <li><b>Safety first</b> &mdash; the install is 100% reversible and won't damage your Pi or printer.</li>
+        <li><b>Keep it private</b> &mdash; never share your local IP or public Tailscale link, it's a direct line to your machine.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="marching"></div>
+    <div class="foot-grid" style="margin-top:34px;">
+      <div class="foot-cta">
+        <h2>Sleep through the print. Not through the failure.</h2>
+      </div>
+      <div class="foot-links">
+        <a class="btn" href="https://github.com/buritoburito920-star/buritoburito920-star" target="_blank" rel="noopener">⭐ STAR ON GITHUB</a>
+        <a class="btn ghost" href="https://discord.gg/kBnARF7EV" target="_blank" rel="noopener">JOIN DISCORD</a>
+      </div>
+    </div>
+    <div class="fine">
+      <span>MIT LICENSE · BUILT FOR THE FLASHFORGE AD5M</span>
+      <a href="https://github.com/buritoburito920-star/buritoburito920-star" target="_blank" rel="noopener">github.com/buritoburito920-star</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ---------- ticker content ----------
+  const tickerItems = [
+    "INSTANT SPAGHETTI DETECTION", "WATCH FROM ANYWHERE", "FULL REMOTE CONTROL",
+    "PHOTO-PROOF DISCORD ALERTS", "AUTO TIME-LAPSE", "SMART TIME TRACKING",
+    "ZERO HARDWARE MODS", "100% REVERSIBLE INSTALL"
+  ];
+  const track = document.getElementById('tickerTrack');
+  const line = tickerItems.map(t => `${t} <span>//</span>`).join(' ');
+  track.innerHTML = line + line; // duplicate for seamless loop
+
+  // ---------- reduced motion check ----------
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------- feed status text sequence ----------
+  const feedStatus = document.getElementById('feedStatus');
+  const recWrap = document.getElementById('recWrap');
+  const feedCaption = document.getElementById('feedCaption');
+  setTimeout(() => {
+    feedStatus.textContent = 'LIVE · 30 FPS';
+    recWrap.style.visibility = 'visible';
+  }, 1400);
+
+  // ---------- canvas pixel-print animation ----------
+  const canvas = document.getElementById('feed');
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  const W = canvas.width, H = canvas.height;
+  const statNum = document.getElementById('statNum');
+  const statHits = document.getElementById('statHits');
+
+  const bedY = H - 30;
+  const centerX = W / 2;
+  let layer = 0;
+  const maxLayers = 16;
+  let mode = 'building'; // building -> ok | fail -> paused -> reset
+  let modeTimer = 0;
+  let failsThisRound = false;
+  let spaghettiPoints = [];
+
+  function drawBed(){
+    ctx.fillStyle = '#0d1117';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = '#1c2430';
+    ctx.fillRect(0, bedY, W, 4);
+    // orange focus zone like the reference dashboard
+    ctx.strokeStyle = 'rgba(255,138,30,0.35)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(centerX-46, bedY-96, 92, 96);
+  }
+
+  function drawPrint(l){
+    const w0 = 60;
+    for(let i=0;i<l;i++){
+      const shrink = i*0.4;
+      const w = w0 - shrink;
+      const y = bedY - 6 - i*6;
+      ctx.fillStyle = i % 2 === 0 ? '#ff8a1e' : '#e8791a';
+      ctx.fillRect(centerX - w/2, y, w, 5);
+    }
+  }
+
+  function drawSpaghetti(){
+    ctx.strokeStyle = '#ffb15c';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    spaghettiPoints.forEach((p,i)=>{
+      if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
+    });
+    ctx.stroke();
+  }
+
+  function genSpaghetti(){
+    spaghettiPoints = [];
+    let x = centerX, y = bedY - 6 - layer*6;
+    for(let i=0;i<40;i++){
+      x += (Math.random()-0.5)*14;
+      y -= Math.random()*3;
+      x = Math.max(10, Math.min(W-10, x));
+      spaghettiPoints.push({x,y});
+    }
+  }
+
+  function drawPaused(){
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = '#ff5252';
+    ctx.fillRect(centerX-16, H/2-16, 10, 32);
+    ctx.fillRect(centerX+6, H/2-16, 10, 32);
+    ctx.fillStyle = '#ff5252';
+    ctx.font = "10px 'Press Start 2P'";
+    ctx.textAlign = 'center';
+    ctx.fillText('AUTO-PAUSED', centerX, H/2+44);
+  }
+
+  function drawDone(){
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle = '#38d98d';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(centerX-20, H/2);
+    ctx.lineTo(centerX-5, H/2+14);
+    ctx.lineTo(centerX+22, H/2-16);
+    ctx.stroke();
+    ctx.fillStyle = '#38d98d';
+    ctx.font = "10px 'Press Start 2P'";
+    ctx.textAlign = 'center';
+    ctx.fillText('PRINT COMPLETE', centerX, H/2+44);
+  }
+
+  let willFail = true; // alternate rounds
+
+  function step(){
+    modeTimer++;
+    drawBed();
+
+    if(mode === 'building'){
+      drawPrint(layer);
+      if(modeTimer % 9 === 0 && layer < maxLayers){ layer++; }
+      statNum.textContent = '0%';
+      statHits.textContent = '0/10';
+      feedCaption.textContent = `Layer ${layer}/${maxLayers}`;
+
+      const failLayer = 10;
+      if(willFail && layer >= failLayer){
+        mode = 'spaghetti'; modeTimer = 0; genSpaghetti();
+      } else if(!willFail && layer >= maxLayers){
+        mode = 'done'; modeTimer = 0;
+      }
+    }
+    else if(mode === 'spaghetti'){
+      drawPrint(layer);
+      drawSpaghetti();
+      const pct = Math.min(100, modeTimer*4);
+      statNum.textContent = pct + '%';
+      statHits.textContent = Math.min(10, Math.floor(modeTimer/3)) + '/10';
+      feedCaption.textContent = 'Certainty rising...';
+      if(modeTimer > 26){ mode = 'paused'; modeTimer = 0; }
+    }
+    else if(mode === 'paused'){
+      drawPrint(layer);
+      drawSpaghetti();
+      drawPaused();
+      statNum.textContent = '100%';
+      statHits.textContent = '10/10';
+      feedCaption.textContent = 'Detector triggered — printer paused';
+      if(modeTimer > 60){ mode='reset'; modeTimer=0; }
+    }
+    else if(mode === 'done'){
+      drawPrint(layer);
+      drawDone();
+      feedCaption.textContent = 'No failures this print';
+      if(modeTimer > 60){ mode='reset'; modeTimer=0; }
+    }
+    else if(mode === 'reset'){
+      layer = 0; willFail = !willFail; mode='building'; modeTimer=0;
+    }
+
+    if(!reduced){ requestAnimationFrame(step); }
+  }
+
+  if(reduced){
+    drawBed(); layer = 10; drawPrint(layer);
+    statNum.textContent = '0%'; statHits.textContent = '0/10';
+    feedCaption.textContent = 'Layer 10/16';
+  } else {
+    requestAnimationFrame(step);
+  }
+</script>
+
+</body>
+</html>
