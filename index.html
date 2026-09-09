@@ -289,6 +289,12 @@
   .vitals-status.warn{ color:#ffb020; }
   .vitals-status.crit{ color:var(--red); }
   .vitals-status.shock{ color:#fff; }
+  .vitals-pulse{
+    position:absolute; top:16px; right:20px; width:9px; height:9px;
+    background:var(--green); transition:background .15s;
+  }
+  .vitals-pulse.ping{ animation:pulseScale .5s ease-out; }
+  @keyframes pulseScale{ 0%{ transform:scale(1); opacity:1; } 100%{ transform:scale(2.6); opacity:0; } }
   .vitals-legend{ display:grid; grid-template-columns:repeat(3,1fr); }
   .vitals-legend div{ padding:14px 18px; border-right:1px solid var(--border); border-top:1px solid var(--border); }
   .vitals-legend div:last-child{ border-right:none; }
@@ -395,6 +401,13 @@
     background-image:linear-gradient(90deg, var(--border-lit) 0 10px, transparent 10px 20px);
     background-size:20px 4px;
   }
+
+  /* ---------- scroll reveal ---------- */
+  .reveal{
+    opacity:0; transform:translateY(26px);
+    transition:opacity .6s ease, transform .6s ease;
+  }
+  .reveal.show{ opacity:1; transform:translateY(0); }
 </style>
 </head>
 <body>
@@ -420,7 +433,7 @@
     <div>
       <div class="status-pill"><span class="led"></span> ACTIVE BETA · AD5M SUPPORTED</div>
       <h1 class="flicker">YOUR PRINTER'S<br>NEW GUARDIAN ANGEL</h1>
-      <p class="lede">3D-Spaghetti watches your FlashForge AD5M through a Pi camera and <b>auto-pauses the moment a print goes sideways</b> &mdash; no firmware flashing, no warranty risk, just a webcam that never falls asleep.</p>
+      <p class="lede">3D-Spaghetti runs on a Raspberry Pi with a camera pointed at your FlashForge AD5M. When a print starts failing it catches it and pauses the machine before the spool turns into a mess. No firmware changes, nothing soldered to the board.</p>
       <div class="stat-row">
         <div><div class="stat-num">0</div><div class="stat-label">HARDWARE MODS</div></div>
         <div><div class="stat-num">185s</div><div class="stat-label">SETUP TIMER</div></div>
@@ -458,17 +471,18 @@
 
 <section id="print-vitals">
   <div class="wrap">
-    <div class="sec-head">
+    <div class="sec-head reveal">
       <div class="tag">▸ WHY IT MATTERS</div>
       <h2>Every print has a pulse.<br>Something should watch it.</h2>
-      <p>Think of it as a heart monitor for your print. A steady rhythm means everything's fine. The moment it flatlines, the system shocks it back under control &mdash; by pausing the printer before the spool empties into a nest.</p>
+      <p>A steady rhythm means the print is behaving. The moment it flatlines, that's the failure being confirmed, and pausing the printer is what brings it back under control.</p>
     </div>
 
-    <div class="panel vitals-panel pxframe"><span class="c2"></span><span class="c3"></span>
+    <div class="panel vitals-panel pxframe reveal"><span class="c2"></span><span class="c3"></span>
       <div class="panel-title">▸ PRINT VITALS <span class="meta" id="vitalsMeta">BPM 000</span></div>
       <div class="vitals-screen">
         <canvas id="vitals" width="600" height="180"></canvas>
         <div class="vitals-status" id="vitalsStatus">SINUS RHYTHM</div>
+        <div class="vitals-pulse" id="vitalsPulse"></div>
       </div>
       <div class="vitals-legend">
         <div><div class="k">LEAD</div><div class="v">DETECTOR-I</div></div>
@@ -481,32 +495,32 @@
 
 <section id="overview">
   <div class="wrap">
-    <div class="sec-head">
+    <div class="sec-head reveal">
       <div class="tag">▸ OVERVIEW</div>
       <h2>It doesn't make spaghetti.<br>It hunts it.</h2>
-      <p>Most failure-catchers ask you to mod, flash, or gamble with your printer's warranty. 3D-Spaghetti plugs in natively on a Raspberry Pi and reads what your camera already sees &mdash; zero modification, fully reversible, install and uninstall in one command.</p>
+      <p>Most failure-catchers want you to flash new firmware or open up the printer. This one just reads the camera feed you already have, running entirely on a separate Raspberry Pi. Nothing on the printer itself is touched, and the whole thing installs or removes with one script.</p>
     </div>
 
     <div class="flow">
-      <div class="flow-step pxframe"><span class="c2"></span><span class="c3"></span>
+      <div class="flow-step pxframe reveal"><span class="c2"></span><span class="c3"></span>
         <div class="n">01</div>
         <h4>Setup timer</h4>
         <p>A 185 second window while your bed and hotend settle, so the camera never mistakes warm-up for a problem.</p>
       </div>
-      <div class="flow-step pxframe"><span class="c2"></span><span class="c3"></span>
+      <div class="flow-step pxframe reveal"><span class="c2"></span><span class="c3"></span>
         <div class="n">02</div>
         <h4>Baseline build</h4>
         <p>The detector learns the calm, printing-as-expected frame it should be comparing every new one against.</p>
       </div>
-      <div class="flow-step pxframe"><span class="c2"></span><span class="c3"></span>
+      <div class="flow-step pxframe reveal"><span class="c2"></span><span class="c3"></span>
         <div class="n">03</div>
         <h4>Active watch</h4>
         <p>Every frame is checked pixel by pixel against the baseline, filtering out motion blur and nozzle shadow.</p>
       </div>
-      <div class="flow-step pxframe"><span class="c2"></span><span class="c3"></span>
+      <div class="flow-step pxframe reveal"><span class="c2"></span><span class="c3"></span>
         <div class="n">04</div>
         <h4>Auto-response</h4>
-        <p>Once certainty and consecutive hits are met, it pauses, cancels, or just alerts you &mdash; your call.</p>
+        <p>Once certainty and consecutive hits are met, it pauses, cancels, or just sends an alert. You decide which.</p>
       </div>
     </div>
   </div>
@@ -514,38 +528,38 @@
 
 <section id="features">
   <div class="wrap">
-    <div class="sec-head">
+    <div class="sec-head reveal">
       <div class="tag">▸ WHAT YOU GET</div>
       <h2>A full remote command center, not just a tripwire.</h2>
     </div>
 
     <div class="grid">
-      <div class="feat">
+      <div class="feat reveal">
         <div class="badge">◈</div>
         <h3>Instant detection</h3>
         <p>Catches a failure in seconds and pauses before your whole spool turns into a nest.</p>
       </div>
-      <div class="feat">
+      <div class="feat reveal">
         <div class="badge">▂▄▆█</div>
         <h3>Watch from anywhere</h3>
-        <p>A clear live stream over a secure Tailscale tunnel &mdash; no port forwarding, no exposed router.</p>
+        <p>A live stream over a Tailscale tunnel, so there's no port forwarding and nothing exposed on your router.</p>
       </div>
-      <div class="feat">
+      <div class="feat reveal">
         <div class="badge">▦</div>
         <h3>Full remote control</h3>
         <p>Pause, resume, cancel, move axes, set temps, or send raw G-code straight from your phone.</p>
       </div>
-      <div class="feat">
+      <div class="feat reveal">
         <div class="badge">◉</div>
         <h3>Photo-proof alerts</h3>
         <p>Discord pings with a snapshot the instant it pauses, plus start, finish, and manual events.</p>
       </div>
-      <div class="feat">
+      <div class="feat reveal">
         <div class="badge">▥</div>
         <h3>Auto time-lapse</h3>
         <p>Every print becomes a shareable MP4, with an optional HUD overlay burned right in.</p>
       </div>
-      <div class="feat">
+      <div class="feat reveal">
         <div class="badge">◷</div>
         <h3>Smart time tracking</h3>
         <p>Live ETA, elapsed, and total-time estimates that settle in after the first few layers.</p>
@@ -556,35 +570,35 @@
 
 <section id="install">
   <div class="wrap">
-    <div class="sec-head">
+    <div class="sec-head reveal">
       <div class="tag">▸ SETUP &amp; INSTALLATION</div>
       <h2>Four steps. One Pi. No soldering.</h2>
-      <p>Verified live on a Raspberry Pi 4 &mdash; other boards work with small tweaks.</p>
+      <p>Verified on a Raspberry Pi 4. Other boards should work with a few small tweaks.</p>
     </div>
 
     <div class="install-grid">
-      <div class="term">
+      <div class="term reveal">
         <div class="term-bar"><i></i><i></i><i></i></div>
         <div class="term-body">
           <div class="step-label">STEP 1 // PREP YOUR NETWORK</div>
           <p>Grab your Raspberry Pi IP and your FlashForge printer IP (port 8899 is fixed). Optional: make a Discord webhook for personal alerts.</p>
         </div>
       </div>
-      <div class="term">
+      <div class="term reveal">
         <div class="term-bar"><i></i><i></i><i></i></div>
         <div class="term-body">
           <div class="step-label">STEP 2 // GET YOUR TOOLS</div>
           <p>Install PuTTY and FileZilla (or any SSH/SFTP client), then download the 3D-Spaghetti folder from GitHub.</p>
         </div>
       </div>
-      <div class="term">
+      <div class="term reveal">
         <div class="term-bar"><i></i><i></i><i></i></div>
         <div class="term-body">
           <div class="step-label">STEP 3 // CONNECT TO YOUR PI</div>
           <p>SSH in with PuTTY, or drag the folder over with FileZilla via SFTP on port 22.</p>
         </div>
       </div>
-      <div class="term">
+      <div class="term reveal">
         <div class="term-bar"><i></i><i></i><i></i></div>
         <div class="term-body">
           <div class="step-label">STEP 4 // DEPLOY AND GO</div>
@@ -599,13 +613,13 @@
 
 <section id="requirements">
   <div class="wrap">
-    <div class="sec-head">
+    <div class="sec-head reveal">
       <div class="tag">▸ HARDWARE CHECK</div>
       <h2>What it runs on.</h2>
     </div>
 
     <div class="req-grid">
-      <div class="req-col">
+      <div class="req-col reveal">
         <div class="req-title">MINIMUM</div>
         <ul>
           <li>Raspberry Pi 3 <b>(4GB RAM)</b></li>
@@ -614,7 +628,7 @@
           <li>Fast Micro SD card</li>
         </ul>
       </div>
-      <div class="req-col rec">
+      <div class="req-col rec reveal">
         <div class="req-title">RECOMMENDED</div>
         <ul>
           <li>Raspberry Pi 4 <b>(8GB RAM)</b></li>
@@ -630,14 +644,14 @@
 
 <section id="warning">
   <div class="wrap">
-    <div class="warn pxframe"><span class="c2"></span><span class="c3"></span>
+    <div class="warn pxframe reveal"><span class="c2"></span><span class="c3"></span>
       <div class="warn-title">⚠ BEFORE YOU FLASH THAT SD CARD</div>
       <ul>
-        <li><b>Hardware fit</b> &mdash; tuned only for the FlashForge AD5M. AD5X may work but is untested.</li>
-        <li><b>Beta status</b> &mdash; active development, expect polish updates and the occasional bug.</li>
-        <li><b>AI honesty</b> &mdash; computer vision is powerful but can be wrong. Use Pause or Cancel at your own risk.</li>
-        <li><b>Safety first</b> &mdash; the install is 100% reversible and won't damage your Pi or printer.</li>
-        <li><b>Keep it private</b> &mdash; never share your local IP or public Tailscale link, it's a direct line to your machine.</li>
+        <li><b>Hardware fit:</b> tuned for the FlashForge AD5M specifically. The AD5X may work but hasn't been tested.</li>
+        <li><b>Beta status:</b> still under active development, so expect updates and the occasional bug.</li>
+        <li><b>Not foolproof:</b> computer vision can misread a frame. Pause and Cancel are there, but use your judgment.</li>
+        <li><b>Safe to try:</b> the install is fully reversible and won't damage your Pi or printer.</li>
+        <li><b>Keep it private:</b> don't share your local IP or Tailscale link publicly. It's a direct line into your machine.</li>
       </ul>
     </div>
   </div>
@@ -647,7 +661,7 @@
   <div class="wrap">
     <div class="marching"></div>
     <div class="foot-grid" style="margin-top:34px;">
-      <div class="foot-cta">
+      <div class="foot-cta reveal">
         <h2>Sleep through the print. Not through the failure.</h2>
       </div>
       <div class="foot-links">
@@ -675,6 +689,28 @@
 
   // ---------- reduced motion check ----------
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------- scroll reveal ----------
+  const revealGroups = document.querySelectorAll('.grid, .flow, .req-grid, .install-grid');
+  revealGroups.forEach(group => {
+    Array.from(group.children).forEach((el, i) => {
+      el.style.transitionDelay = (i * 70) + 'ms';
+    });
+  });
+
+  if(reduced){
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('show'));
+  } else {
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if(entry.isIntersecting){
+          entry.target.classList.add('show');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+  }
 
   // ---------- feed status text sequence ----------
   const feedStatus = document.getElementById('feedStatus');
@@ -785,6 +821,15 @@
   let ecgBuffer = new Array(VW).fill(0);
   let beatClock = 0;
   let shockFlash = 0;
+  let lastPhase = 0;
+  const pulseDot = document.getElementById('vitalsPulse');
+
+  function triggerBeatPulse(color){
+    pulseDot.style.background = color;
+    pulseDot.classList.remove('ping');
+    void pulseDot.offsetWidth;
+    pulseDot.classList.add('ping');
+  }
 
   function pushSample(v){
     ecgBuffer.push(v);
@@ -808,6 +853,14 @@
     vctx.lineWidth = 1;
     for(let x=0;x<VW;x+=20){ vctx.beginPath(); vctx.moveTo(x,0); vctx.lineTo(x,VH); vctx.stroke(); }
     for(let y=0;y<VH;y+=20){ vctx.beginPath(); vctx.moveTo(0,y); vctx.lineTo(VW,y); vctx.stroke(); }
+    vctx.strokeStyle = 'rgba(56,217,141,0.18)';
+    for(let x=0;x<VW;x+=100){ vctx.beginPath(); vctx.moveTo(x,0); vctx.lineTo(x,VH); vctx.stroke(); }
+    vctx.fillStyle = 'rgba(56,217,141,0.4)';
+    vctx.font = "12px 'VT323'";
+    vctx.textAlign = 'left';
+    vctx.fillText('LEAD II', 10, 18);
+    vctx.textAlign = 'right';
+    vctx.fillText('25mm/s   10mm/mV', VW-10, VH-8);
   }
 
   function setVitals(bpm, label, cls){
@@ -824,17 +877,21 @@
       beatClock += 1/34; // ~34 frame period, steady
       const phase = beatClock % 1;
       sample = pqrst(phase) + (Math.random()-0.5)*1.2;
+      if(lastPhase < 0.19 && phase >= 0.19) triggerBeatPulse('#38d98d');
+      lastPhase = phase;
       setVitals(74, 'SINUS RHYTHM', '');
     }
     else if(mode === 'spaghetti' && modeTimer < 16){
       beatClock += 1/(20 - modeTimer*0.6); // speeding up, erratic
       const phase = beatClock % 1;
       sample = pqrst(phase)*(1+modeTimer*0.03) + (Math.random()-0.5)*8;
+      if(lastPhase < 0.19 && phase >= 0.19) triggerBeatPulse('#ffb020');
+      lastPhase = phase;
       setVitals(90 + modeTimer*4, 'IRREGULAR RHYTHM', 'warn');
     }
     else if(mode === 'spaghetti'){
       sample = (Math.random()-0.5)*1.5;
-      setVitals(0, 'FLATLINE — NO PULSE', 'crit');
+      setVitals(0, 'FLATLINE // NO PULSE', 'crit');
     }
     else if(mode === 'paused' && modeTimer < 14){
       sample = (Math.random()-0.5)*1;
@@ -842,19 +899,23 @@
     }
     else if(mode === 'paused' && modeTimer < 18){
       sample = modeTimer === 14 ? -VH*0.9 : (Math.random()-0.5)*4;
-      if(modeTimer === 14) shockFlash = 6;
+      if(modeTimer === 14){ shockFlash = 6; triggerBeatPulse('#ffffff'); }
       setVitals(0, 'CLEAR!', 'shock');
     }
     else if(mode === 'paused'){
       beatClock += 1/48; // slower, calmer restored rhythm
       const phase = beatClock % 1;
       sample = pqrst(phase)*0.6 + (Math.random()-0.5)*1;
+      if(lastPhase < 0.19 && phase >= 0.19) triggerBeatPulse('#38d98d');
+      lastPhase = phase;
       setVitals(58, 'RHYTHM RESTORED · PAUSED SAFE', '');
     }
     else if(mode === 'done'){
       beatClock += 1/34;
       const phase = beatClock % 1;
       sample = pqrst(phase) + (Math.random()-0.5)*1.2;
+      if(lastPhase < 0.19 && phase >= 0.19) triggerBeatPulse('#38d98d');
+      lastPhase = phase;
       setVitals(76, 'NOMINAL', '');
     }
     else{
@@ -864,8 +925,11 @@
     pushSample(sample);
     drawVitalsGrid();
 
-    vctx.strokeStyle = shockFlash > 0 ? '#ffffff' : (vitalsStatus.className.includes('crit') ? '#ff5252' : vitalsStatus.className.includes('warn') ? '#ffb020' : '#38d98d');
+    const lineColor = shockFlash > 0 ? '#ffffff' : (vitalsStatus.className.includes('crit') ? '#ff5252' : vitalsStatus.className.includes('warn') ? '#ffb020' : '#38d98d');
+    vctx.strokeStyle = lineColor;
     vctx.lineWidth = 2;
+    vctx.shadowBlur = 6;
+    vctx.shadowColor = lineColor;
     vctx.beginPath();
     for(let i=0;i<ecgBuffer.length;i++){
       const x = i;
@@ -873,6 +937,7 @@
       if(i===0) vctx.moveTo(x,y); else vctx.lineTo(x,y);
     }
     vctx.stroke();
+    vctx.shadowBlur = 0;
 
     if(shockFlash > 0){
       vctx.fillStyle = 'rgba(255,255,255,0.5)';
@@ -914,7 +979,7 @@
       drawPaused();
       statNum.textContent = '100%';
       statHits.textContent = '10/10';
-      feedCaption.textContent = 'Detector triggered — printer paused';
+      feedCaption.textContent = 'Detector triggered, printer paused';
       if(modeTimer > 60){ mode='reset'; modeTimer=0; }
     }
     else if(mode === 'done'){
