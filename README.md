@@ -250,9 +250,9 @@ Found a bug? Got an idea? Want to contribute? Join the [Discord](https://discord
 
 ## 🤝 Credits & Acknowledgments
 
-This project is built upon the foundational architecture of the **Scythe Spaghetti Detection** project by [DarkEden-coding](https://github.com). We are incredibly grateful for their open-source contributions to the 3D printing community.
+This project is built upon the foundational architecture of the **Scythe Spaghetti Detection** project by [DarkEden-coding](https://github.com/DarkEden-coding). We are incredibly grateful for their open-source contributions to the 3D printing community.
 
-* Original Repository: [DarkEden-coding/Scythe-Spaghetti-detection](https://github.com/Scythe-Spaghetti-detection)
+* Original Repository: [DarkEden-coding/Scythe-Spaghetti-detection](https://github.com/DarkEden-coding/Scythe-Spaghetti-detection)
 * Core License: GNU AGPL-3.0
 
 Our adaptations focus on native integration for the FlashForge Adventurer 5M ecosystem, automated setup scripts, and custom-trained high-accuracy model layers optimized for this environment.
