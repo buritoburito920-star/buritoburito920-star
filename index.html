@@ -1,526 +1,186 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>3D-Spaghetti // Printer Guardian</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<meta charset="utf-8">
+<title>AD5M Guardian — AI print failure detection for the FlashForge Adventurer 5M</title>
+<meta name="description" content="Guardian watches your AD5M print through a camera, spots spaghetti failures, and pauses, cancels or alerts you before a spool is wasted.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Chakra+Petch:wght@600;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#0a0d13;
-    --bg2:#0e1219;
-    --panel:#10151d;
-    --panel-alt:#141a24;
-    --border:#232c3a;
-    --border-lit:#3a4658;
-    --text:#c8d2e0;
-    --dim:#5c6879;
-    --orange:#ff8a1e;
-    --orange-dim:#7a4a1f;
-    --blue:#4da8ff;
-    --green:#38d98d;
-    --red:#ff5252;
-  }
+:root{--bg:#07090d;--bg2:#0b0f15;--card:#0f141c;--raised:#161d28;--line:#1e2633;--text:#eef2f6;--dim:#9aa4b4;--accent:#ff8c1a;--accent-ink:#ffa447;--on-accent:#1a0e00;--ok:#34d17b;--warn:#ffb020;--bad:#ff5252;--glow:rgba(255,140,26,.14);--shadow:0 20px 50px rgba(0,0,0,.45);
+--sans:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace;--head:'Chakra Petch','Inter',sans-serif}
+[data-theme=light]{--bg:#f8f6f3;--bg2:#f1eeea;--card:#fff;--raised:#f3f0ec;--line:#e4dfd8;--text:#16181d;--dim:#5d6575;--accent:#e86f00;--accent-ink:#b54d00;--ok:#13875a;--warn:#a86a00;--bad:#d63a3a;--glow:rgba(232,111,0,.12);--shadow:0 20px 50px rgba(60,40,10,.12)}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{font:16px/1.6 var(--sans);background:var(--bg);color:var(--text);padding-bottom:calc(72px + env(safe-area-inset-bottom));-webkit-font-smoothing:antialiased;transition:background .25s,color .25s}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+.wrap{width:min(1120px,100% - 40px);margin:0 auto}
+section{padding:72px 0}
+h1,h2,h3{font-family:var(--head);line-height:1.12;letter-spacing:-.01em}
+h1{font-size:clamp(2.2rem,7vw,4rem);font-weight:700}
+h2{font-size:clamp(1.6rem,4.5vw,2.4rem);font-weight:700}
+h3{font-size:1.1rem;font-weight:600}
+.eyebrow{font:500 12px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink);margin-bottom:12px;display:block}
+.lede{color:var(--dim);font-size:1.1rem;max-width:56ch;margin-top:16px}
+.head{margin-bottom:40px}
 
-  *{box-sizing:border-box; margin:0; padding:0;}
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);font:600 15px var(--sans);text-decoration:none;cursor:pointer;transition:transform .15s,border-color .15s,background .15s,box-shadow .15s}
+.btn:hover{border-color:var(--accent);transform:translateY(-1px)}
+.btn:active{transform:translateY(0) scale(.98)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);box-shadow:0 8px 24px var(--glow)}
+.btn.primary:hover{box-shadow:0 10px 30px rgba(255,140,26,.35)}
 
-  html{scroll-behavior:smooth;}
+/* nav */
+.top{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{display:flex;align-items:center;gap:10px;font:700 15px var(--head);letter-spacing:.14em;text-decoration:none}
+.logo i{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#ffc15a);display:grid;place-items:center}
+.logo i::after{content:"";width:9px;height:9px;border-radius:50%;background:var(--on-accent)}
+.links{display:none;gap:4px}
+.links a{display:inline-flex;align-items:center;min-height:48px;padding:0 14px;border-radius:10px;text-decoration:none;color:var(--dim);font-weight:500;font-size:15px;transition:.15s}
+.links a:hover,.links a.on{color:var(--text);background:var(--raised)}
+.right{display:flex;gap:8px;align-items:center}
+.icon{width:48px;height:48px;border-radius:12px;border:1px solid var(--line);background:var(--card);cursor:pointer;display:grid;place-items:center;color:var(--text);transition:.15s}
+.icon:hover{border-color:var(--accent);color:var(--accent-ink)}
+.icon svg{width:20px;height:20px}
+.sun{display:none}[data-theme=light] .sun{display:block}[data-theme=light] .moon{display:none}
+.gh{display:none}
+.dock{position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:60;display:flex;justify-content:space-between;padding:6px;border-radius:18px;background:color-mix(in srgb,var(--card) 88%,transparent);backdrop-filter:blur(16px);border:1px solid var(--line);box-shadow:var(--shadow)}
+.dock a{flex:1;min-height:48px;display:grid;place-items:center;border-radius:12px;font-size:13px;font-weight:600;text-decoration:none;color:var(--dim);transition:.15s}
+.dock a.on{background:var(--accent);color:var(--on-accent)}
 
-  body{
-    background:var(--bg);
-    color:var(--text);
-    font-family:'VT323', monospace;
-    font-size:19px;
-    line-height:1.5;
-    image-rendering:pixelated;
-    overflow-x:hidden;
-  }
+/* hero */
+.hero{padding:56px 0 40px;background:radial-gradient(900px 420px at 50% -80px,var(--glow),transparent 70%)}
+.hero .cta{display:flex;flex-direction:column;gap:12px;margin-top:28px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+.chip{font:500 12px var(--mono);padding:6px 12px;border-radius:99px;border:1px solid var(--line);color:var(--dim);background:var(--card)}
+.chip b{color:var(--accent-ink);font-weight:500}
 
-  h1,h2,h3, .pixel-font, .logo, nav a, .btn, .badge, .panel-title, .stat-num, .eyebrow-pixel{
-    font-family:'Press Start 2P', monospace;
-  }
+/* mock dashboard */
+.mock{margin-top:44px;border:1px solid var(--line);border-radius:18px;background:var(--bg2);box-shadow:var(--shadow);overflow:hidden}
+.mock-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);font:12px var(--mono);color:var(--dim)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.mock-body{display:grid;gap:12px;padding:12px}
+.m-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.m-t{font:600 10px var(--head);letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+.m-t::before{content:"▸ ";color:var(--accent)}
+.big{font:500 30px var(--mono);color:var(--accent-ink)}
+.bar{height:6px;border-radius:3px;background:var(--raised);overflow:hidden;margin:10px 0}
+.bar i{display:block;height:100%;width:64%;background:var(--accent);border-radius:3px;animation:fill 6s ease-in-out infinite alternate}
+@keyframes fill{from{width:58%}to{width:71%}}
+.kv{display:flex;justify-content:space-between;font:12px var(--mono);color:var(--dim);padding:4px 0}
+.kv b{color:var(--text);font-weight:500}
+.cam{position:relative;aspect-ratio:4/3;border-radius:10px;overflow:hidden;background:linear-gradient(160deg,#1c222c,#0a0d12 60%),#000}
+[data-theme=light] .cam{background:linear-gradient(160deg,#4a5260,#1b1f27 60%)}
+.cam::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.04) 0 1px,transparent 1px 48px),repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 48px)}
+.cam .part{position:absolute;left:30%;right:30%;bottom:0;height:46%;background:linear-gradient(#3a414e,#262b35);border-radius:10px 10px 0 0}
+.mark{position:absolute;left:36%;top:44%;width:28%;height:24%;background:rgba(255,176,32,.12);animation:pulse 2.4s ease-in-out infinite}
+.mark::before,.mark::after{content:"";position:absolute;width:16px;height:16px;border:2.5px solid #ffb020}
+.mark::before{left:0;top:0;border-right:0;border-bottom:0;border-radius:4px 0 0 0}
+.mark::after{right:0;bottom:0;border-left:0;border-top:0;border-radius:0 0 4px 0}
+@keyframes pulse{50%{background:rgba(255,176,32,.2)}}
+.alert{position:absolute;top:10px;left:50%;transform:translateX(-50%);white-space:nowrap;font:500 11px var(--sans);color:#ffb020;background:rgba(255,176,32,.16);border:1px solid rgba(255,176,32,.45);padding:3px 11px;border-radius:99px}
+.live{position:absolute;top:10px;left:10px;font:11px var(--sans);color:var(--ok);background:rgba(7,9,13,.7);padding:2px 8px;border-radius:6px}
 
-  ::selection{ background:var(--orange); color:#0a0d13; }
+/* cards */
+.grid{display:grid;gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;transition:border-color .2s,transform .2s,box-shadow .2s}
+.card:hover{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));transform:translateY(-3px);box-shadow:0 14px 34px var(--glow)}
+.card p{color:var(--dim);margin-top:8px;font-size:15px}
+.ico{width:44px;height:44px;border-radius:12px;background:var(--glow);color:var(--accent-ink);display:grid;place-items:center;margin-bottom:16px}
+.ico svg{width:22px;height:22px}
+.steps{counter-reset:s;display:grid;gap:16px}
+.step{position:relative;padding:24px 24px 24px 76px;background:var(--card);border:1px solid var(--line);border-radius:16px}
+.step::before{counter-increment:s;content:counter(s);position:absolute;left:24px;top:24px;width:36px;height:36px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font:700 15px var(--mono)}
+.step p{color:var(--dim);margin-top:6px;font-size:15px}
 
-  a{ color:inherit; text-decoration:none; }
+/* tuner */
+.tuner{display:grid;gap:24px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px}
+.field label{display:flex;justify-content:space-between;font-weight:600;margin-bottom:6px}
+.field label span{font:500 14px var(--mono);color:var(--accent-ink)}
+.field small{color:var(--dim);display:block;margin-top:6px}
+input[type=range]{width:100%;height:48px;accent-color:var(--accent);cursor:pointer;background:none}
+.out{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;gap:14px;align-content:start}
+.out .big{font-size:38px}
+.tag{display:inline-block;padding:4px 12px;border-radius:99px;font-size:13px;font-weight:600;background:var(--glow);color:var(--accent-ink)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--raised);padding:5px;border-radius:12px}
+.seg button{min-height:48px;border:0;border-radius:9px;background:none;color:var(--dim);font:600 14px var(--sans);cursor:pointer;transition:.15s}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--on-accent)}
 
-  img, svg{ image-rendering:pixelated; }
+/* faq */
+details{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;transition:border-color .2s}
+details[open]{border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}
+summary{min-height:56px;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;font-weight:600;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font:500 22px var(--mono);color:var(--accent-ink);transition:transform .2s}
+details[open] summary::after{transform:rotate(45deg)}
+details p{padding:0 20px 18px;color:var(--dim)}
+.final{text-align:center;padding:56px 24px;border-radius:24px;border:1px solid var(--line);background:radial-gradient(600px 260px at 50% 0,var(--glow),transparent 70%),var(--card)}
+.final .cta{display:flex;flex-direction:column;gap:12px;margin:28px auto 0;max-width:360px}
+footer{border-top:1px solid var(--line);padding:28px 0;color:var(--dim);font-size:14px}
+footer .wrap{display:flex;flex-direction:column;gap:12px}
+footer a{text-decoration:none;display:inline-flex;align-items:center;min-height:48px;color:var(--dim)}footer a:hover{color:var(--accent-ink)}
+.fl{display:flex;gap:18px}
 
-  @media (prefers-reduced-motion: reduce){
-    *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; }
-  }
+.rv{opacity:0;transform:translateY(16px);transition:opacity .6s,transform .6s}
+.rv.in{opacity:1;transform:none}
 
-  /* ---------- scanline overlay ---------- */
-  .scanlines{
-    pointer-events:none;
-    position:fixed; inset:0; z-index:200;
-    background:repeating-linear-gradient(
-      to bottom,
-      rgba(0,0,0,0.14) 0px,
-      rgba(0,0,0,0.14) 1px,
-      transparent 1px,
-      transparent 3px
-    );
-    mix-blend-mode:overlay;
-    opacity:0.55;
-  }
-  .vignette{
-    pointer-events:none;
-    position:fixed; inset:0; z-index:199;
-    background:radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
-  }
-
-  .flicker{
-    animation: flicker 0.25s steps(1) 3;
-  }
-  @keyframes flicker{
-    0%{ opacity:1; } 15%{ opacity:0.4; } 30%{ opacity:1; } 45%{ opacity:0.5; } 60%{ opacity:1; }
-  }
-
-  /* ---------- pixel corner brackets ---------- */
-  .pxframe{ position:relative; }
-  .pxframe::before, .pxframe::after,
-  .pxframe .c2, .pxframe .c3{
-    content:""; position:absolute; width:9px; height:9px; pointer-events:none;
-  }
-  .pxframe::before{ /* top-left */
-    top:-1px; left:-1px;
-    background:
-      linear-gradient(var(--orange),var(--orange)) top left / 100% 3px no-repeat,
-      linear-gradient(var(--orange),var(--orange)) top left / 3px 100% no-repeat;
-  }
-  .pxframe::after{ /* bottom-right */
-    bottom:-1px; right:-1px;
-    background:
-      linear-gradient(var(--orange),var(--orange)) bottom right / 100% 3px no-repeat,
-      linear-gradient(var(--orange),var(--orange)) bottom right / 3px 100% no-repeat;
-  }
-  .pxframe .c2{ /* top-right */
-    top:-1px; right:-1px;
-    background:
-      linear-gradient(var(--orange),var(--orange)) top right / 100% 3px no-repeat,
-      linear-gradient(var(--orange),var(--orange)) top right / 3px 100% no-repeat;
-  }
-  .pxframe .c3{ /* bottom-left */
-    bottom:-1px; left:-1px;
-    background:
-      linear-gradient(var(--orange),var(--orange)) bottom left / 100% 3px no-repeat,
-      linear-gradient(var(--orange),var(--orange)) bottom left / 3px 100% no-repeat;
-  }
-  .pxframe.blue::before, .pxframe.blue::after, .pxframe.blue .c2, .pxframe.blue .c3{
-    background-color:transparent;
-  }
-  .pxframe.blue::before{ background-image:
-      linear-gradient(var(--blue),var(--blue)),
-      linear-gradient(var(--blue),var(--blue)); }
-  .pxframe.blue::after{ background-image:
-      linear-gradient(var(--blue),var(--blue)),
-      linear-gradient(var(--blue),var(--blue)); }
-  .pxframe.blue .c2{ background-image:
-      linear-gradient(var(--blue),var(--blue)),
-      linear-gradient(var(--blue),var(--blue)); }
-  .pxframe.blue .c3{ background-image:
-      linear-gradient(var(--blue),var(--blue)),
-      linear-gradient(var(--blue),var(--blue)); }
-
-  /* pixel dashed rule */
-  .pixel-rule{
-    height:6px; width:100%;
-    background-image: linear-gradient(90deg, var(--orange) 0 8px, transparent 8px 16px);
-    background-size:16px 6px;
-    opacity:0.7;
-  }
-
-  /* ---------- layout shells ---------- */
-  .wrap{ max-width:1180px; margin:0 auto; padding:0 28px; }
-  section{ padding:96px 0; border-top:1px solid var(--border); }
-  section:first-of-type{ border-top:none; }
-
-  .panel{
-    background:var(--panel);
-    border:1px solid var(--border);
-    position:relative;
-  }
-  .panel-title{
-    font-size:11px;
-    letter-spacing:0.5px;
-    color:var(--orange);
-    padding:12px 14px;
-    border-bottom:1px solid var(--border);
-    display:flex; align-items:center; justify-content:space-between;
-    background:var(--panel-alt);
-  }
-  .panel-title .meta{ color:var(--dim); font-size:10px; }
-  .panel-body{ padding:20px; }
-
-  /* ---------- header ---------- */
-  header{
-    position:sticky; top:0; z-index:100;
-    background:rgba(10,13,19,0.92);
-    backdrop-filter:blur(4px);
-    border-bottom:1px solid var(--border);
-  }
-  header .wrap{
-    display:flex; align-items:center; justify-content:space-between;
-    height:64px;
-  }
-  .logo{ display:flex; align-items:center; gap:10px; font-size:13px; color:var(--text); }
-  .logo .dot{
-    width:12px; height:12px; background:var(--orange);
-    box-shadow: 3px 0 0 var(--orange), 0 3px 0 var(--orange), -3px 0 0 var(--orange), 0 -3px 0 var(--orange);
-    animation:blink 1.6s steps(1) infinite;
-  }
-  @keyframes blink{ 0%,49%{opacity:1;} 50%,100%{opacity:0.25;} }
-
-  nav{ display:flex; gap:26px; }
-  nav a{ font-size:10px; color:var(--dim); transition:color .15s; }
-  nav a:hover{ color:var(--orange); }
-  @media (max-width:760px){ nav{ display:none; } }
-
-  .btn{
-    display:inline-block;
-    font-size:11px;
-    color:#0a0d13;
-    background:var(--orange);
-    padding:12px 16px;
-    border:1px solid var(--orange);
-    box-shadow:4px 4px 0 var(--orange-dim);
-    transition:transform .08s, box-shadow .08s;
-    cursor:pointer;
-    white-space:nowrap;
-  }
-  .btn:hover{ transform:translate(1px,1px); box-shadow:2px 2px 0 var(--orange-dim); }
-  .btn:active{ transform:translate(4px,4px); box-shadow:0 0 0 var(--orange-dim); }
-  .btn.ghost{
-    background:transparent; color:var(--text); border:1px solid var(--border-lit);
-    box-shadow:4px 4px 0 var(--border);
-  }
-  .btn.ghost:hover{ color:var(--orange); border-color:var(--orange); }
-  .btn.small{ padding:9px 12px; font-size:9px; }
-  .btn-row{ display:flex; gap:14px; flex-wrap:wrap; margin-top:34px; }
-
-  /* ---------- hero ---------- */
-  .hero{ padding-top:72px; padding-bottom:60px; border-top:none; }
-  .hero .wrap{
-    display:grid; grid-template-columns:1.05fr 1fr; gap:56px; align-items:center;
-  }
-  @media (max-width:900px){ .hero .wrap{ grid-template-columns:1fr; } }
-
-  .status-pill{
-    display:inline-flex; align-items:center; gap:8px;
-    font-size:9px; color:var(--green);
-    border:1px solid var(--green);
-    padding:6px 10px;
-    margin-bottom:22px;
-  }
-  .status-pill .led{ width:6px; height:6px; background:var(--green); animation:blink 1s steps(1) infinite; }
-
-  h1{
-    font-size:30px; line-height:1.55; color:#fff;
-    text-shadow:3px 3px 0 var(--orange-dim);
-  }
-  @media (max-width:520px){ h1{ font-size:23px; } }
-
-  .lede{
-    margin-top:26px; font-size:22px; color:var(--dim); max-width:52ch; line-height:1.5;
-  }
-  .lede b{ color:var(--text); font-weight:normal; }
-
-  .stat-row{ display:flex; gap:34px; margin-top:40px; flex-wrap:wrap; }
-  .stat-num{ font-size:20px; color:var(--orange); }
-  .stat-label{ font-size:13px; color:var(--dim); margin-top:8px; }
-
-  /* live feed mock */
-  .feed-panel .panel-title span.live{ color:var(--green); }
-  .feed-screen{
-    aspect-ratio:4/3; background:#000; position:relative; overflow:hidden;
-    border-bottom:1px solid var(--border);
-  }
-  canvas#feed{ width:100%; height:100%; display:block; image-rendering:pixelated; }
-  .feed-hud{
-    position:absolute; inset:0; pointer-events:none;
-    font-size:11px; color:var(--orange);
-    padding:8px;
-    display:flex; flex-direction:column; justify-content:space-between;
-  }
-  .feed-hud .top-row{ display:flex; justify-content:space-between; }
-  .feed-hud .rec{ color:var(--red); display:flex; gap:5px; align-items:center; }
-  .feed-hud .rec i{ width:7px; height:7px; background:var(--red); display:inline-block; animation:blink .8s steps(1) infinite; }
-  .feed-caption{ color:var(--dim); font-size:11px; }
-  .feed-stats{ display:grid; grid-template-columns:1fr 1fr; }
-  .feed-stats div{ padding:14px 16px; border-right:1px solid var(--border); border-top:1px solid var(--border); }
-  .feed-stats div:nth-child(2n){ border-right:none; }
-  .feed-stats .k{ font-size:9px; color:var(--dim); margin-bottom:8px; }
-  .feed-stats .v{ font-size:16px; color:var(--blue); font-family:'Press Start 2P'; }
-  .feed-stats .v.o{ color:var(--orange); }
-
-  /* ---------- ticker ---------- */
-  .ticker-wrap{
-    border-top:1px solid var(--border); border-bottom:1px solid var(--border);
-    background:var(--panel-alt);
-    overflow:hidden; white-space:nowrap;
-    padding:14px 0;
-  }
-  .ticker{
-    display:inline-block;
-    font-family:'Press Start 2P';
-    font-size:11px;
-    color:var(--dim);
-    animation:scroll-left 32s linear infinite;
-  }
-  .ticker span{ color:var(--orange); margin:0 18px; }
-  @keyframes scroll-left{
-    0%{ transform:translateX(0); }
-    100%{ transform:translateX(-50%); }
-  }
-
-  /* ---------- vitals monitor ---------- */
-  .vitals-panel{ margin-top:8px; }
-  .vitals-screen{ position:relative; background:#000; border-bottom:1px solid var(--border); }
-  canvas#vitals{ width:100%; height:180px; display:block; }
-  @media (max-width:600px){ canvas#vitals{ height:130px; } }
-  .vitals-status{
-    position:absolute; bottom:14px; left:18px;
-    font-family:'Press Start 2P'; font-size:11px; color:var(--green);
-    transition:color .15s;
-  }
-  .vitals-status.warn{ color:#ffb020; }
-  .vitals-status.crit{ color:var(--red); }
-  .vitals-status.shock{ color:#fff; }
-  .vitals-pulse{
-    position:absolute; top:16px; right:20px; width:9px; height:9px;
-    background:var(--green); transition:background .15s;
-  }
-  .vitals-pulse.ping{ animation:pulseScale .5s ease-out; }
-  @keyframes pulseScale{ 0%{ transform:scale(1); opacity:1; } 100%{ transform:scale(2.6); opacity:0; } }
-  .vitals-legend{ display:grid; grid-template-columns:repeat(3,1fr); }
-  .vitals-legend div{ padding:14px 18px; border-right:1px solid var(--border); border-top:1px solid var(--border); }
-  .vitals-legend div:last-child{ border-right:none; }
-  .vitals-legend .k{ font-size:9px; color:var(--dim); margin-bottom:8px; font-family:'Press Start 2P'; }
-  .vitals-legend .v{ font-size:16px; color:var(--green); font-family:'Press Start 2P'; }
-
-  /* ---------- section headers ---------- */
-  .sec-head{ margin-bottom:52px; max-width:60ch; }
-  .sec-head .tag{ font-size:10px; color:var(--orange); margin-bottom:16px; }
-  .sec-head h2{ font-size:24px; color:#fff; line-height:1.5; }
-  .sec-head p{ margin-top:18px; font-size:20px; color:var(--dim); }
-
-  /* ---------- features ---------- */
-  .grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
-  @media (max-width:900px){ .grid{ grid-template-columns:repeat(2,1fr); } }
-  @media (max-width:600px){ .grid{ grid-template-columns:1fr; } }
-
-  .feat{
-    background:var(--panel); border:1px solid var(--border); padding:26px;
-    transition:border-color .15s, transform .15s;
-  }
-  .feat:hover{ border-color:var(--orange); transform:translateY(-3px); }
-  .badge{
-    width:46px; height:46px; display:flex; align-items:center; justify-content:center;
-    border:1px solid var(--border-lit); color:var(--orange); font-size:20px; margin-bottom:20px;
-    background:var(--panel-alt);
-  }
-  .feat h3{ font-family:'VT323'; font-size:22px; color:#fff; letter-spacing:0.3px; }
-  .feat p{ margin-top:10px; color:var(--dim); font-size:18px; }
-
-  /* ---------- how it works ---------- */
-  .flow{ display:grid; grid-template-columns:repeat(4,1fr); gap:0; }
-  @media (max-width:820px){ .flow{ grid-template-columns:1fr 1fr; } }
-  @media (max-width:480px){ .flow{ grid-template-columns:1fr; } }
-  .flow-step{
-    border:1px solid var(--border); padding:22px; position:relative;
-    margin-left:-1px; margin-top:-1px;
-  }
-  .flow-step .n{ font-family:'Press Start 2P'; font-size:11px; color:var(--orange); }
-  .flow-step h4{ font-family:'VT323'; font-size:20px; color:#fff; margin-top:14px; }
-  .flow-step p{ font-size:17px; color:var(--dim); margin-top:8px; }
-
-  /* ---------- requirements ---------- */
-  .req-grid{ display:grid; grid-template-columns:1fr 1fr; gap:22px; }
-  @media (max-width:700px){ .req-grid{ grid-template-columns:1fr; } }
-  .req-col{ background:var(--panel); border:1px solid var(--border); }
-  .req-col.rec{ border-color:var(--orange); }
-  .req-col .req-title{
-    padding:14px 18px; font-size:11px; border-bottom:1px solid var(--border);
-    background:var(--panel-alt); color:var(--text);
-  }
-  .req-col.rec .req-title{ color:var(--orange); }
-  .req-col ul{ list-style:none; padding:18px; }
-  .req-col li{ padding:9px 0; font-size:18px; border-bottom:1px dashed var(--border); color:var(--dim); }
-  .req-col li:last-child{ border-bottom:none; }
-  .req-col li b{ color:var(--text); font-weight:normal; }
-  .req-note{ margin-top:22px; font-size:16px; color:var(--dim); }
-  .req-note b{ color:var(--blue); font-weight:normal; }
-
-  /* ---------- install ---------- */
-  .install-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:22px; }
-  @media (max-width:820px){ .install-grid{ grid-template-columns:1fr; } }
-  .term{
-    background:#05070a; border:1px solid var(--border);
-  }
-  .term-bar{
-    display:flex; gap:7px; padding:10px 12px; border-bottom:1px solid var(--border);
-    background:var(--panel-alt);
-  }
-  .term-bar i{ width:9px; height:9px; display:inline-block; }
-  .term-bar i:nth-child(1){ background:var(--red); }
-  .term-bar i:nth-child(2){ background:var(--orange); }
-  .term-bar i:nth-child(3){ background:var(--green); }
-  .term-body{ padding:18px; font-size:17px; min-height:120px; }
-  .term-body .step-label{ font-family:'Press Start 2P'; font-size:9px; color:var(--orange); margin-bottom:14px; }
-  .term-body p{ color:var(--dim); margin-bottom:10px; }
-  .term-body .cmd{ color:var(--green); }
-  .term-body .cmd::before{ content:"$ "; color:var(--dim); }
-  .cursor-blink{ display:inline-block; width:9px; height:16px; background:var(--green); animation:blink .9s steps(1) infinite; vertical-align:middle; margin-left:2px; }
-
-  /* ---------- warning box ---------- */
-  .warn{
-    border:1px solid var(--red); border-left:6px solid var(--red);
-    background:rgba(255,82,82,0.06); padding:24px 26px;
-  }
-  .warn .warn-title{ font-family:'Press Start 2P'; font-size:11px; color:var(--red); margin-bottom:16px; }
-  .warn ul{ padding-left:22px; }
-  .warn li{ font-size:18px; color:var(--dim); margin-bottom:8px; }
-  .warn li b{ color:var(--text); font-weight:normal; }
-
-  /* ---------- footer ---------- */
-  footer{ padding:70px 0 50px; }
-  .foot-grid{
-    display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:34px;
-    padding-bottom:34px; border-bottom:1px solid var(--border);
-  }
-  .foot-cta h2{ font-size:22px; color:#fff; line-height:1.5; max-width:22ch; }
-  .foot-links{ display:flex; gap:16px; flex-wrap:wrap; }
-  .fine{ margin-top:28px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:14px; color:var(--dim); }
-  .fine a:hover{ color:var(--orange); }
-
-  .marching{
-    height:4px; margin-bottom:0;
-    background-image:linear-gradient(90deg, var(--border-lit) 0 10px, transparent 10px 20px);
-    background-size:20px 4px;
-  }
-
-  /* ---------- scroll reveal ---------- */
-  .reveal{
-    opacity:0; transform:translateY(26px);
-    transition:opacity .6s ease, transform .6s ease;
-  }
-  .reveal.show{ opacity:1; transform:translateY(0); }
+@media(min-width:640px){.hero .cta,.final .cta{flex-direction:row}.final .cta{justify-content:center;max-width:none}.grid.g3{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:900px){
+  body{padding-bottom:0}.dock{display:none}.links{display:flex}.gh{display:inline-flex}
+  section{padding:96px 0}.hero{padding:88px 0 60px}
+  .grid.g3{grid-template-columns:repeat(3,1fr)}.steps{grid-template-columns:repeat(3,1fr)}
+  .step{padding:76px 24px 24px}.step::before{top:24px}
+  .mock-body{grid-template-columns:260px 1fr 220px;padding:16px;gap:16px}
+  .tuner{grid-template-columns:1.1fr 1fr;padding:36px;gap:40px}
+  footer .wrap{flex-direction:row;justify-content:space-between;align-items:center}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.rv{opacity:1;transform:none}}
 </style>
 </head>
 <body>
 
-<div class="scanlines"></div>
-<div class="vignette"></div>
-
-<header>
+<header class="top">
   <div class="wrap">
-    <div class="logo"><span class="dot"></span> 3D-SPAGHETTI</div>
-    <nav>
-      <a href="#overview">OVERVIEW</a>
-      <a href="#features">FEATURES</a>
-      <a href="#install">INSTALL</a>
-      <a href="#requirements">REQUIREMENTS</a>
+    <a class="logo" href="#home" aria-label="AD5M Guardian home"><i></i>AD5M GUARDIAN</a>
+    <nav class="links" aria-label="Primary">
+      <a href="#features">Features</a><a href="#how">How it works</a><a href="#tune">Tuning</a><a href="#faq">FAQ</a>
     </nav>
-    <a class="btn small" href="https://github.com/buritoburito920-star/buritoburito920-star" target="_blank" rel="noopener">VIEW ON GITHUB</a>
+    <div class="right">
+      <a class="btn gh" href="https://github.com/buritoburito920-star/buritoburito920-star?tab=readme-ov-file" target="_blank" rel="noopener">GitHub</a>
+      <button class="icon" id="theme" aria-label="Switch to light mode" title="Toggle theme">
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
+    </div>
   </div>
 </header>
 
+<main id="home">
 <section class="hero">
   <div class="wrap">
-    <div>
-      <div class="status-pill"><span class="led"></span> ACTIVE BETA · AD5M SUPPORTED</div>
-      <h1 class="flicker">YOUR PRINTER'S<br>NEW GUARDIAN ANGEL</h1>
-      <p class="lede">3D-Spaghetti runs on a Raspberry Pi with a camera pointed at your FlashForge AD5M. When a print starts failing it catches it and pauses the machine before the spool turns into a mess. No firmware changes, nothing soldered to the board.</p>
-      <div class="stat-row">
-        <div><div class="stat-num">0</div><div class="stat-label">HARDWARE MODS</div></div>
-        <div><div class="stat-num">185s</div><div class="stat-label">SETUP TIMER</div></div>
-        <div><div class="stat-num">MIT</div><div class="stat-label">LICENSE</div></div>
-      </div>
-      <div class="btn-row">
-        <a class="btn" href="https://github.com/buritoburito920-star/buritoburito920-star/archive/refs/heads/main.zip">DOWNLOAD ZIP</a>
-        <a class="btn ghost" href="https://github.com/buritoburito920-star/buritoburito920-star" target="_blank" rel="noopener">FIND IT ON GITHUB</a>
-      </div>
+    <span class="eyebrow">For the FlashForge Adventurer 5M</span>
+    <h1>Stop a failed print<br>before it wastes a spool.</h1>
+    <p class="lede">Guardian watches your AD5M through a camera, spots spaghetti as it forms, and pauses, cancels or pings you on Discord. No hardware mods required.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/buritoburito920-star/buritoburito920-star?tab=readme-ov-file" target="_blank" rel="noopener">Get started</a>
+      <a class="btn" href="#how">See how it works</a>
     </div>
+    <div class="chips"><span class="chip"><b>0</b> hardware mods</span><span class="chip">AD5M supported</span><span class="chip">Runs on your network</span></div>
 
-    <div class="panel feed-panel pxframe"><span class="c2"></span><span class="c3"></span>
-      <div class="panel-title">▸ LIVE FEED <span class="meta">640×480 MJPEG</span></div>
-      <div class="feed-screen">
-        <canvas id="feed" width="256" height="192"></canvas>
-        <div class="feed-hud">
-          <div class="top-row">
-            <span id="feedStatus">CONNECTING...</span>
-            <span class="rec" id="recWrap" style="visibility:hidden;"><i></i>LIVE</span>
-          </div>
-          <span id="feedCaption" class="feed-caption"></span>
-        </div>
-      </div>
-      <div class="feed-stats">
-        <div><div class="k">DETECTOR STATUS</div><div class="v o" id="statNum">0%</div></div>
-        <div><div class="k">CONSECUTIVE HITS</div><div class="v" id="statHits">0/10</div></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="ticker-wrap">
-  <div class="ticker" id="tickerTrack"></div>
-</div>
-
-<section id="print-vitals">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <div class="tag">▸ WHY IT MATTERS</div>
-      <h2>Every print has a pulse.<br>Something should watch it.</h2>
-      <p>A steady rhythm means the print is behaving. The moment it flatlines, that's the failure being confirmed, and pausing the printer is what brings it back under control.</p>
-    </div>
-
-    <div class="panel vitals-panel pxframe reveal"><span class="c2"></span><span class="c3"></span>
-      <div class="panel-title">▸ PRINT VITALS <span class="meta" id="vitalsMeta">BPM 000</span></div>
-      <div class="vitals-screen">
-        <canvas id="vitals" width="600" height="180"></canvas>
-        <div class="vitals-status" id="vitalsStatus">SINUS RHYTHM</div>
-        <div class="vitals-pulse" id="vitalsPulse"></div>
-      </div>
-      <div class="vitals-legend">
-        <div><div class="k">LEAD</div><div class="v">DETECTOR-I</div></div>
-        <div><div class="k">PATIENT</div><div class="v">AD5M #01</div></div>
-        <div><div class="k">ON FLATLINE</div><div class="v">AUTO-PAUSE</div></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="overview">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <div class="tag">▸ OVERVIEW</div>
-      <h2>It doesn't make spaghetti.<br>It hunts it.</h2>
-      <p>Most failure-catchers want you to flash new firmware or open up the printer. This one just reads the camera feed you already have, running entirely on a separate Raspberry Pi. Nothing on the printer itself is touched, and the whole thing installs or removes with one script.</p>
-    </div>
-
-    <div class="flow">
-      <div class="flow-step pxframe reveal"><span class="c2"></span><span class="c3"></span>
-        <div class="n">01</div>
-        <h4>Setup timer</h4>
-        <p>A 185 second window while your bed and hotend settle, so the camera never mistakes warm-up for a problem.</p>
-      </div>
-      <div class="flow-step pxframe reveal"><span class="c2"></span><span class="c3"></span>
-        <div class="n">02</div>
-        <h4>Baseline build</h4>
-        <p>The detector learns the calm, printing-as-expected frame it should be comparing every new one against.</p>
-      </div>
-      <div class="flow-step pxframe reveal"><span class="c2"></span><span class="c3"></span>
-        <div class="n">03</div>
-        <h4>Active watch</h4>
-        <p>Every frame is checked pixel by pixel against the baseline, filtering out motion blur and nozzle shadow.</p>
-      </div>
-      <div class="flow-step pxframe reveal"><span class="c2"></span><span class="c3"></span>
-        <div class="n">04</div>
-        <h4>Auto-response</h4>
-        <p>Once certainty and consecutive hits are met, it pauses, cancels, or just sends an alert. You decide which.</p>
+    <div class="mock rv" role="img" aria-label="Illustrative preview of the Guardian dashboard showing a live camera feed with a highlighted suspected defect">
+      <div class="mock-bar"><span class="dot"></span>Printing · illustrative preview</div>
+      <div class="mock-body" aria-hidden="true">
+        <div class="m-card"><div class="m-t">Print status</div><div class="big">64%</div><div class="bar"><i></i></div>
+          <div class="kv"><span>Elapsed</span><b>1h 12m</b></div><div class="kv"><span>Remaining</span><b>41m</b></div><div class="kv"><span>Layer</span><b>112/170</b></div></div>
+        <div class="m-card"><div class="m-t">Live feed</div>
+          <div class="cam"><span class="live">Live</span><div class="alert">Possible print issue · 2 of 3 checks</div><div class="part"></div><div class="mark"></div></div></div>
+        <div class="m-card"><div class="m-t">Temperatures</div>
+          <div class="kv"><span>Nozzle</span><b>235°</b></div><div class="kv"><span>Bed</span><b>60°</b></div>
+          <div class="m-t" style="margin-top:16px">Detector</div><div class="kv"><span>Status</span><b style="color:var(--warn)">Possible issue</b></div></div>
       </div>
     </div>
   </div>
@@ -528,485 +188,105 @@
 
 <section id="features">
   <div class="wrap">
-    <div class="sec-head reveal">
-      <div class="tag">▸ WHAT YOU GET</div>
-      <h2>A full remote command center, not just a tripwire.</h2>
+    <div class="head"><span class="eyebrow">Features</span><h2>Everything you need to leave a print unattended.</h2></div>
+    <div class="grid g3">
+      <article class="card rv"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></div><h3>AI failure detection</h3><p>A vision model scores every camera check for spaghetti and highlights the suspect area on the live feed.</p></article>
+      <article class="card rv"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg></div><h3>You choose the response</h3><p>Pause, cancel, or alert only. Require several detections in a row so one bad frame never stops a good print.</p></article>
+      <article class="card rv"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16v12H4zM9 3l1 3h4l1-3"/></svg></div><h3>Live camera view</h3><p>Watch the build plate from any device on your network, with print progress, layers and ETA alongside.</p></article>
+      <article class="card rv"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 8-3 8h18s-3-1-3-8M10 21h4"/></svg></div><h3>Discord alerts</h3><p>Get notified when a print starts, finishes, pauses or cancels, with first-frame, last-frame and periodic pictures.</p></article>
+      <article class="card rv"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg></div><h3>Automatic time-lapses</h3><p>Every print is recorded and ready to download from the dashboard. Set the interval and how many to keep.</p></article>
+      <article class="card rv"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 17l6-6-6-6M12 19h8"/></svg></div><h3>Console and temperatures</h3><p>Send G-code, set nozzle and bed targets, and follow live temperature and certainty graphs without leaving the page.</p></article>
     </div>
+  </div>
+</section>
 
-    <div class="grid">
-      <div class="feat reveal">
-        <div class="badge">◈</div>
-        <h3>Instant detection</h3>
-        <p>Catches a failure in seconds and pauses before your whole spool turns into a nest.</p>
+<section id="how" style="background:var(--bg2)">
+  <div class="wrap">
+    <div class="head"><span class="eyebrow">How it works</span><h2>Three steps, then it watches for you.</h2></div>
+    <div class="steps">
+      <div class="step rv"><h3>Connect</h3><p>Enter your printer's IP address. Guardian talks to the AD5M over your local network.</p></div>
+      <div class="step rv"><h3>Watch</h3><p>The camera is checked continuously. Suspected defects are highlighted and counted as hits.</p></div>
+      <div class="step rv"><h3>Act</h3><p>Once the hit count is reached, Guardian pauses, cancels or alerts you, depending on your setting.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="tune">
+  <div class="wrap">
+    <div class="head"><span class="eyebrow">Tuning</span><h2>Decide how cautious it should be.</h2><p class="lede">More required hits means fewer false alarms but a slower reaction. Try it. Each AI check takes roughly five seconds.</p></div>
+    <div class="tuner rv">
+      <div style="display:grid;gap:22px;align-content:start">
+        <div class="field"><label for="hits">Consecutive detections <span id="hits-v">3</span></label><input type="range" id="hits" min="1" max="10" value="3"><small>How many checks in a row must flag a problem.</small></div>
+        <div class="field"><label for="cert">Minimum certainty <span id="cert-v">25%</span></label><input type="range" id="cert" min="10" max="90" step="5" value="25"><small>How sure the AI must be before a check counts.</small></div>
+        <div><div style="font-weight:600;margin-bottom:8px">When a failure is confirmed</div>
+          <div class="seg" role="group" aria-label="Failure action"><button aria-pressed="true" data-a="Pauses the print so you can inspect it.">Pause</button><button aria-pressed="false" data-a="Cancels the print immediately.">Cancel</button><button aria-pressed="false" data-a="Only sends you an alert. You decide.">Alert only</button></div></div>
       </div>
-      <div class="feat reveal">
-        <div class="badge">▂▄▆█</div>
-        <h3>Watch from anywhere</h3>
-        <p>A live stream over a Tailscale tunnel, so there's no port forwarding and nothing exposed on your router.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="badge">▦</div>
-        <h3>Full remote control</h3>
-        <p>Pause, resume, cancel, move axes, set temps, or send raw G-code straight from your phone.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="badge">◉</div>
-        <h3>Photo-proof alerts</h3>
-        <p>Discord pings with a snapshot the instant it pauses, plus start, finish, and manual events.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="badge">▥</div>
-        <h3>Auto time-lapse</h3>
-        <p>Every print becomes a shareable MP4, with an optional HUD overlay burned right in.</p>
-      </div>
-      <div class="feat reveal">
-        <div class="badge">◷</div>
-        <h3>Smart time tracking</h3>
-        <p>Live ETA, elapsed, and total-time estimates that settle in after the first few layers.</p>
+      <div class="out" aria-live="polite">
+        <span style="color:var(--dim);font-size:14px">Reaction time</span>
+        <div class="big" id="t">~15 s</div>
+        <span class="tag" id="bal">Balanced</span>
+        <p id="act" style="color:var(--dim);font-size:15px">Pauses the print so you can inspect it.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section id="install">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <div class="tag">▸ SETUP &amp; INSTALLATION</div>
-      <h2>Four steps. One Pi. No soldering.</h2>
-      <p>Verified on a Raspberry Pi 4. Other boards should work with a few small tweaks.</p>
-    </div>
-
-    <div class="install-grid">
-      <div class="term reveal">
-        <div class="term-bar"><i></i><i></i><i></i></div>
-        <div class="term-body">
-          <div class="step-label">STEP 1 // PREP YOUR NETWORK</div>
-          <p>Grab your Raspberry Pi IP and your FlashForge printer IP (port 8899 is fixed). Optional: make a Discord webhook for personal alerts.</p>
-        </div>
-      </div>
-      <div class="term reveal">
-        <div class="term-bar"><i></i><i></i><i></i></div>
-        <div class="term-body">
-          <div class="step-label">STEP 2 // GET YOUR TOOLS</div>
-          <p>Install PuTTY and FileZilla (or any SSH/SFTP client), then download the 3D-Spaghetti folder from GitHub.</p>
-        </div>
-      </div>
-      <div class="term reveal">
-        <div class="term-bar"><i></i><i></i><i></i></div>
-        <div class="term-body">
-          <div class="step-label">STEP 3 // CONNECT TO YOUR PI</div>
-          <p>SSH in with PuTTY, or drag the folder over with FileZilla via SFTP on port 22.</p>
-        </div>
-      </div>
-      <div class="term reveal">
-        <div class="term-bar"><i></i><i></i><i></i></div>
-        <div class="term-body">
-          <div class="step-label">STEP 4 // DEPLOY AND GO</div>
-          <p class="cmd">cd /path/to/3D-Spaghetti</p>
-          <p class="cmd">bash 3D-Spaghetti_Setup --check</p>
-          <p class="cmd">bash 3D-Spaghetti_Setup<span class="cursor-blink"></span></p>
-        </div>
-      </div>
-    </div>
+<section id="faq" style="background:var(--bg2)">
+  <div class="wrap" style="max-width:780px">
+    <div class="head"><span class="eyebrow">FAQ</span><h2>Good questions.</h2></div>
+    <details><summary>Which printers does it support?</summary><p>Guardian is built for the FlashForge Adventurer 5M and talks to it over the local network on port 8899.</p></details>
+    <details><summary>Do I need to modify my printer?</summary><p>No. There are zero hardware mods. You only need a camera pointed at the build plate.</p></details>
+    <details><summary>Can the AI be wrong?</summary><p>Yes. That's why you can require several detections in a row, raise the minimum certainty, or choose alert only and make the call yourself.</p></details>
+    <details><summary>Where do I get help or share feedback?</summary><p>Join the Discord community or open an issue on GitHub. Guardian is in active beta, so feedback shapes what comes next.</p></details>
   </div>
 </section>
 
-<section id="requirements">
+<section>
   <div class="wrap">
-    <div class="sec-head reveal">
-      <div class="tag">▸ HARDWARE CHECK</div>
-      <h2>What it runs on.</h2>
-    </div>
-
-    <div class="req-grid">
-      <div class="req-col reveal">
-        <div class="req-title">MINIMUM</div>
-        <ul>
-          <li>Raspberry Pi 3 <b>(4GB RAM)</b></li>
-          <li>720p Pi Camera Module</li>
-          <li>Quality power brick + cable</li>
-          <li>Fast Micro SD card</li>
-        </ul>
-      </div>
-      <div class="req-col rec reveal">
-        <div class="req-title">RECOMMENDED</div>
-        <ul>
-          <li>Raspberry Pi 4 <b>(8GB RAM)</b></li>
-          <li>1080p Pi Camera Module</li>
-          <li>Quality power brick + cable</li>
-          <li>Fast Micro SD card</li>
-        </ul>
-      </div>
-    </div>
-    <p class="req-note">Software side: <b>Raspberry Pi OS</b> (Bullseye or Bookworm), Python 3.11, rpicam-vid / libcamera-apps, and Tailscale.</p>
+    <div class="final rv"><h2>Let your next print run unattended.</h2><p class="lede" style="margin-inline:auto">Set it up once and Guardian keeps watch.</p>
+      <div class="cta"><a class="btn primary" href="https://github.com/buritoburito920-star/buritoburito920-star?tab=readme-ov-file" target="_blank" rel="noopener">Get started on GitHub</a><a class="btn" href="https://discord.com/invite/kBnARF7EV" target="_blank" rel="noopener">Join the Discord</a></div></div>
   </div>
 </section>
+</main>
 
-<section id="warning">
-  <div class="wrap">
-    <div class="warn pxframe reveal"><span class="c2"></span><span class="c3"></span>
-      <div class="warn-title">⚠ BEFORE YOU FLASH THAT SD CARD</div>
-      <ul>
-        <li><b>Hardware fit:</b> tuned for the FlashForge AD5M specifically. The AD5X may work but hasn't been tested.</li>
-        <li><b>Beta status:</b> still under active development, so expect updates and the occasional bug.</li>
-        <li><b>Not foolproof:</b> computer vision can misread a frame. Pause and Cancel are there, but use your judgment.</li>
-        <li><b>Safe to try:</b> the install is fully reversible and won't damage your Pi or printer.</li>
-        <li><b>Keep it private:</b> don't share your local IP or Tailscale link publicly. It's a direct line into your machine.</li>
-      </ul>
-    </div>
-  </div>
-</section>
+<footer><div class="wrap"><span>© 2026 AD5M Guardian · Active beta</span><div class="fl"><a href="https://discord.com/invite/kBnARF7EV" target="_blank" rel="noopener">Discord</a><a href="https://github.com/buritoburito920-star/buritoburito920-star?tab=readme-ov-file" target="_blank" rel="noopener">GitHub</a></div></div></footer>
 
-<footer>
-  <div class="wrap">
-    <div class="marching"></div>
-    <div class="foot-grid" style="margin-top:34px;">
-      <div class="foot-cta reveal">
-        <h2>Sleep through the print. Not through the failure.</h2>
-      </div>
-      <div class="foot-links">
-        <a class="btn" href="https://github.com/buritoburito920-star/buritoburito920-star" target="_blank" rel="noopener">⭐ STAR ON GITHUB</a>
-        <a class="btn ghost" href="https://discord.gg/kBnARF7EV" target="_blank" rel="noopener">JOIN DISCORD</a>
-      </div>
-    </div>
-    <div class="fine">
-      <span>MIT LICENSE · BUILT FOR THE FLASHFORGE AD5M</span>
-      <a href="https://github.com/buritoburito920-star/buritoburito920-star" target="_blank" rel="noopener">github.com/buritoburito920-star</a>
-    </div>
-  </div>
-</footer>
+<nav class="dock" aria-label="Sections">
+  <a href="#home" class="on">Home</a><a href="#features">Features</a><a href="#how">How</a><a href="#tune">Tune</a><a href="#faq">FAQ</a>
+</nav>
 
 <script>
-  // ---------- ticker content ----------
-  const tickerItems = [
-    "INSTANT SPAGHETTI DETECTION", "WATCH FROM ANYWHERE", "FULL REMOTE CONTROL",
-    "PHOTO-PROOF DISCORD ALERTS", "AUTO TIME-LAPSE", "SMART TIME TRACKING",
-    "ZERO HARDWARE MODS", "100% REVERSIBLE INSTALL"
-  ];
-  const track = document.getElementById('tickerTrack');
-  const line = tickerItems.map(t => `${t} <span>//</span>`).join(' ');
-  track.innerHTML = line + line; // duplicate for seamless loop
+(function(){
+  var root=document.documentElement,btn=document.getElementById('theme'),saved=null;
+  try{saved=localStorage.getItem('ad5m-theme')}catch(e){}
+  function setTheme(t){root.dataset.theme=t;btn.setAttribute('aria-label','Switch to '+(t==='dark'?'light':'dark')+' mode');try{localStorage.setItem('ad5m-theme',t)}catch(e){}}
+  setTheme(saved||(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'));
+  btn.onclick=function(){setTheme(root.dataset.theme==='dark'?'light':'dark')};
 
-  // ---------- reduced motion check ----------
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /* scroll spy for top links + bottom dock */
+  var links=document.querySelectorAll('.links a,.dock a'),secs=['home','features','how','tune','faq'].map(function(i){return document.getElementById(i)});
+  secs[0]=document.querySelector('.hero');secs[0].id='home-top';
+  var spy=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){var id=e.target===secs[0]?'home':e.target.id;links.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')==='#'+id)})}})},{rootMargin:'-45% 0px -50% 0px'});
+  secs.forEach(function(s){if(s)spy.observe(s)});
 
-  // ---------- scroll reveal ----------
-  const revealGroups = document.querySelectorAll('.grid, .flow, .req-grid, .install-grid');
-  revealGroups.forEach(group => {
-    Array.from(group.children).forEach((el, i) => {
-      el.style.transitionDelay = (i * 70) + 'ms';
-    });
-  });
+  /* reveal on scroll */
+  var rv=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');rv.unobserve(e.target)}})},{threshold:.15});
+  document.querySelectorAll('.rv').forEach(function(el,i){el.style.transitionDelay=(i%3)*80+'ms';rv.observe(el)});
 
-  if(reduced){
-    document.querySelectorAll('.reveal').forEach(el => el.classList.add('show'));
-  } else {
-    const revealObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if(entry.isIntersecting){
-          entry.target.classList.add('show');
-          revealObserver.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
-    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+  /* tuner */
+  var h=document.getElementById('hits'),c=document.getElementById('cert');
+  function tune(){
+    var n=+h.value,p=+c.value;
+    document.getElementById('hits-v').textContent=n;document.getElementById('cert-v').textContent=p+'%';
+    document.getElementById('t').textContent='~'+n*5+' s';
+    var score=n*2+p/10,b=document.getElementById('bal');
+    b.textContent=score<8?'Fast, more false alarms':score<14?'Balanced':'Cautious, slower to react';
   }
-
-  // ---------- feed status text sequence ----------
-  const feedStatus = document.getElementById('feedStatus');
-  const recWrap = document.getElementById('recWrap');
-  const feedCaption = document.getElementById('feedCaption');
-  setTimeout(() => {
-    feedStatus.textContent = 'LIVE · 30 FPS';
-    recWrap.style.visibility = 'visible';
-  }, 1400);
-
-  // ---------- canvas pixel-print animation ----------
-  const canvas = document.getElementById('feed');
-  const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
-  const W = canvas.width, H = canvas.height;
-  const statNum = document.getElementById('statNum');
-  const statHits = document.getElementById('statHits');
-
-  const bedY = H - 30;
-  const centerX = W / 2;
-  let layer = 0;
-  const maxLayers = 16;
-  let mode = 'building'; // building -> ok | fail -> paused -> reset
-  let modeTimer = 0;
-  let failsThisRound = false;
-  let spaghettiPoints = [];
-
-  function drawBed(){
-    ctx.fillStyle = '#0d1117';
-    ctx.fillRect(0,0,W,H);
-    ctx.fillStyle = '#1c2430';
-    ctx.fillRect(0, bedY, W, 4);
-    // orange focus zone like the reference dashboard
-    ctx.strokeStyle = 'rgba(255,138,30,0.35)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(centerX-46, bedY-96, 92, 96);
-  }
-
-  function drawPrint(l){
-    const w0 = 60;
-    for(let i=0;i<l;i++){
-      const shrink = i*0.4;
-      const w = w0 - shrink;
-      const y = bedY - 6 - i*6;
-      ctx.fillStyle = i % 2 === 0 ? '#ff8a1e' : '#e8791a';
-      ctx.fillRect(centerX - w/2, y, w, 5);
-    }
-  }
-
-  function drawSpaghetti(){
-    ctx.strokeStyle = '#ffb15c';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    spaghettiPoints.forEach((p,i)=>{
-      if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
-    });
-    ctx.stroke();
-  }
-
-  function genSpaghetti(){
-    spaghettiPoints = [];
-    let x = centerX, y = bedY - 6 - layer*6;
-    for(let i=0;i<40;i++){
-      x += (Math.random()-0.5)*14;
-      y -= Math.random()*3;
-      x = Math.max(10, Math.min(W-10, x));
-      spaghettiPoints.push({x,y});
-    }
-  }
-
-  function drawPaused(){
-    ctx.fillStyle = 'rgba(0,0,0,0.55)';
-    ctx.fillRect(0,0,W,H);
-    ctx.fillStyle = '#ff5252';
-    ctx.fillRect(centerX-16, H/2-16, 10, 32);
-    ctx.fillRect(centerX+6, H/2-16, 10, 32);
-    ctx.fillStyle = '#ff5252';
-    ctx.font = "10px 'Press Start 2P'";
-    ctx.textAlign = 'center';
-    ctx.fillText('AUTO-PAUSED', centerX, H/2+44);
-  }
-
-  function drawDone(){
-    ctx.fillStyle = 'rgba(0,0,0,0.35)';
-    ctx.fillRect(0,0,W,H);
-    ctx.strokeStyle = '#38d98d';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(centerX-20, H/2);
-    ctx.lineTo(centerX-5, H/2+14);
-    ctx.lineTo(centerX+22, H/2-16);
-    ctx.stroke();
-    ctx.fillStyle = '#38d98d';
-    ctx.font = "10px 'Press Start 2P'";
-    ctx.textAlign = 'center';
-    ctx.fillText('PRINT COMPLETE', centerX, H/2+44);
-  }
-
-  let willFail = true; // alternate rounds
-
-  // ---------- vitals monitor (EKG) ----------
-  const vcanvas = document.getElementById('vitals');
-  const vctx = vcanvas.getContext('2d');
-  vctx.imageSmoothingEnabled = false;
-  const VW = vcanvas.width, VH = vcanvas.height;
-  const vitalsMeta = document.getElementById('vitalsMeta');
-  const vitalsStatus = document.getElementById('vitalsStatus');
-  let ecgBuffer = new Array(VW).fill(0);
-  let beatClock = 0;
-  let shockFlash = 0;
-  let lastPhase = 0;
-  const pulseDot = document.getElementById('vitalsPulse');
-
-  function triggerBeatPulse(color){
-    pulseDot.style.background = color;
-    pulseDot.classList.remove('ping');
-    void pulseDot.offsetWidth;
-    pulseDot.classList.add('ping');
-  }
-
-  function pushSample(v){
-    ecgBuffer.push(v);
-    if(ecgBuffer.length > VW) ecgBuffer.shift();
-  }
-
-  // amplitude for a normal PQRST beat given phase 0..1
-  function pqrst(phase){
-    if(phase > 0.08 && phase < 0.12) return -6 * Math.sin((phase-0.08)/0.04*Math.PI); // P
-    if(phase > 0.17 && phase < 0.185) return 8;                                        // Q
-    if(phase >= 0.185 && phase < 0.21) return -55 * Math.sin((phase-0.185)/0.025*Math.PI); // R spike
-    if(phase > 0.21 && phase < 0.235) return 12;                                       // S
-    if(phase > 0.30 && phase < 0.46) return -14 * Math.sin((phase-0.30)/0.16*Math.PI); // T
-    return 0;
-  }
-
-  function drawVitalsGrid(){
-    vctx.fillStyle = '#02060a';
-    vctx.fillRect(0,0,VW,VH);
-    vctx.strokeStyle = 'rgba(56,217,141,0.08)';
-    vctx.lineWidth = 1;
-    for(let x=0;x<VW;x+=20){ vctx.beginPath(); vctx.moveTo(x,0); vctx.lineTo(x,VH); vctx.stroke(); }
-    for(let y=0;y<VH;y+=20){ vctx.beginPath(); vctx.moveTo(0,y); vctx.lineTo(VW,y); vctx.stroke(); }
-    vctx.strokeStyle = 'rgba(56,217,141,0.18)';
-    for(let x=0;x<VW;x+=100){ vctx.beginPath(); vctx.moveTo(x,0); vctx.lineTo(x,VH); vctx.stroke(); }
-    vctx.fillStyle = 'rgba(56,217,141,0.4)';
-    vctx.font = "12px 'VT323'";
-    vctx.textAlign = 'left';
-    vctx.fillText('LEAD II', 10, 18);
-    vctx.textAlign = 'right';
-    vctx.fillText('25mm/s   10mm/mV', VW-10, VH-8);
-  }
-
-  function setVitals(bpm, label, cls){
-    vitalsMeta.textContent = 'BPM ' + String(bpm).padStart(3,'0');
-    vitalsStatus.textContent = label;
-    vitalsStatus.className = 'vitals-status' + (cls ? ' '+cls : '');
-  }
-
-  function drawVitals(mode, modeTimer){
-    const midY = VH/2;
-    let sample = 0;
-
-    if(mode === 'building'){
-      beatClock += 1/34; // ~34 frame period, steady
-      const phase = beatClock % 1;
-      sample = pqrst(phase) + (Math.random()-0.5)*1.2;
-      if(lastPhase < 0.19 && phase >= 0.19) triggerBeatPulse('#38d98d');
-      lastPhase = phase;
-      setVitals(74, 'SINUS RHYTHM', '');
-    }
-    else if(mode === 'spaghetti' && modeTimer < 16){
-      beatClock += 1/(20 - modeTimer*0.6); // speeding up, erratic
-      const phase = beatClock % 1;
-      sample = pqrst(phase)*(1+modeTimer*0.03) + (Math.random()-0.5)*8;
-      if(lastPhase < 0.19 && phase >= 0.19) triggerBeatPulse('#ffb020');
-      lastPhase = phase;
-      setVitals(90 + modeTimer*4, 'IRREGULAR RHYTHM', 'warn');
-    }
-    else if(mode === 'spaghetti'){
-      sample = (Math.random()-0.5)*1.5;
-      setVitals(0, 'FLATLINE // NO PULSE', 'crit');
-    }
-    else if(mode === 'paused' && modeTimer < 14){
-      sample = (Math.random()-0.5)*1;
-      setVitals(0, 'CHARGING...', 'warn');
-    }
-    else if(mode === 'paused' && modeTimer < 18){
-      sample = modeTimer === 14 ? -VH*0.9 : (Math.random()-0.5)*4;
-      if(modeTimer === 14){ shockFlash = 6; triggerBeatPulse('#ffffff'); }
-      setVitals(0, 'CLEAR!', 'shock');
-    }
-    else if(mode === 'paused'){
-      beatClock += 1/48; // slower, calmer restored rhythm
-      const phase = beatClock % 1;
-      sample = pqrst(phase)*0.6 + (Math.random()-0.5)*1;
-      if(lastPhase < 0.19 && phase >= 0.19) triggerBeatPulse('#38d98d');
-      lastPhase = phase;
-      setVitals(58, 'RHYTHM RESTORED · PAUSED SAFE', '');
-    }
-    else if(mode === 'done'){
-      beatClock += 1/34;
-      const phase = beatClock % 1;
-      sample = pqrst(phase) + (Math.random()-0.5)*1.2;
-      if(lastPhase < 0.19 && phase >= 0.19) triggerBeatPulse('#38d98d');
-      lastPhase = phase;
-      setVitals(76, 'NOMINAL', '');
-    }
-    else{
-      sample = 0;
-    }
-
-    pushSample(sample);
-    drawVitalsGrid();
-
-    const lineColor = shockFlash > 0 ? '#ffffff' : (vitalsStatus.className.includes('crit') ? '#ff5252' : vitalsStatus.className.includes('warn') ? '#ffb020' : '#38d98d');
-    vctx.strokeStyle = lineColor;
-    vctx.lineWidth = 2;
-    vctx.shadowBlur = 6;
-    vctx.shadowColor = lineColor;
-    vctx.beginPath();
-    for(let i=0;i<ecgBuffer.length;i++){
-      const x = i;
-      const y = midY + ecgBuffer[i];
-      if(i===0) vctx.moveTo(x,y); else vctx.lineTo(x,y);
-    }
-    vctx.stroke();
-    vctx.shadowBlur = 0;
-
-    if(shockFlash > 0){
-      vctx.fillStyle = 'rgba(255,255,255,0.5)';
-      vctx.fillRect(0,0,VW,VH);
-      shockFlash--;
-    }
-  }
-
-  function step(){
-    modeTimer++;
-    drawBed();
-
-    if(mode === 'building'){
-      drawPrint(layer);
-      if(modeTimer % 9 === 0 && layer < maxLayers){ layer++; }
-      statNum.textContent = '0%';
-      statHits.textContent = '0/10';
-      feedCaption.textContent = `Layer ${layer}/${maxLayers}`;
-
-      const failLayer = 10;
-      if(willFail && layer >= failLayer){
-        mode = 'spaghetti'; modeTimer = 0; genSpaghetti();
-      } else if(!willFail && layer >= maxLayers){
-        mode = 'done'; modeTimer = 0;
-      }
-    }
-    else if(mode === 'spaghetti'){
-      drawPrint(layer);
-      drawSpaghetti();
-      const pct = Math.min(100, modeTimer*4);
-      statNum.textContent = pct + '%';
-      statHits.textContent = Math.min(10, Math.floor(modeTimer/3)) + '/10';
-      feedCaption.textContent = 'Certainty rising...';
-      if(modeTimer > 26){ mode = 'paused'; modeTimer = 0; }
-    }
-    else if(mode === 'paused'){
-      drawPrint(layer);
-      drawSpaghetti();
-      drawPaused();
-      statNum.textContent = '100%';
-      statHits.textContent = '10/10';
-      feedCaption.textContent = 'Detector triggered, printer paused';
-      if(modeTimer > 60){ mode='reset'; modeTimer=0; }
-    }
-    else if(mode === 'done'){
-      drawPrint(layer);
-      drawDone();
-      feedCaption.textContent = 'No failures this print';
-      if(modeTimer > 60){ mode='reset'; modeTimer=0; }
-    }
-    else if(mode === 'reset'){
-      layer = 0; willFail = !willFail; mode='building'; modeTimer=0;
-    }
-
-    drawVitals(mode, modeTimer);
-
-    if(!reduced){ requestAnimationFrame(step); }
-  }
-
-  if(reduced){
-    drawBed(); layer = 10; drawPrint(layer);
-    statNum.textContent = '0%'; statHits.textContent = '0/10';
-    feedCaption.textContent = 'Layer 10/16';
-    drawVitalsGrid();
-    setVitals(74, 'SINUS RHYTHM', '');
-  } else {
-    requestAnimationFrame(step);
-  }
+  h.oninput=c.oninput=tune;tune();
+  document.querySelectorAll('.seg button').forEach(function(b){b.onclick=function(){
+    document.querySelectorAll('.seg button').forEach(function(x){x.setAttribute('aria-pressed',x===b)});
+    document.getElementById('act').textContent=b.dataset.a}});
+})();
 </script>
-
 </body>
 </html>
